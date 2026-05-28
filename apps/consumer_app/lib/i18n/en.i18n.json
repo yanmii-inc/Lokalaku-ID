@@ -1,0 +1,16 @@
+{
+    "app": {
+        "name": "consumer_app"
+    },
+    "home": {
+        "title": "consumer_app Home Page",
+        "body": "Home Page"
+    },
+    "settings": {
+        "title": "Settings Page"
+    },
+    "nav": {
+        "home": "Home",
+        "settings": "Settings"
+    }
+}
