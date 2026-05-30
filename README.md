@@ -4,7 +4,7 @@
 
 **Hyper-local. Community-owned. Zero middlemen.**
 
-An open-source, decentralized digital ecosystem that empowers rural communities by connecting wholesale hubs directly to village stores and end-consumers — eliminating predatory supply chains and restoring economic sovereignty to the people who need it most.
+An open-source, decentralized digital ecosystem that empowers local communities by connecting wholesale hubs directly to neighborhood stores and end-consumers — eliminating predatory supply chains and restoring economic sovereignty to the people who need it most.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#)
 [![Moon](https://img.shields.io/badge/Moon-2.2.4-blueviolet)](https://moonrepo.dev)
@@ -20,22 +20,22 @@ An open-source, decentralized digital ecosystem that empowers rural communities 
 
 ## 🤔 Why We Built This
 
-Village stores across rural Indonesia are stuck in a broken supply chain. A small warung that wants to restock cooking oil or rice has no direct access to factory pricing — they're forced to buy from layers of distributors, each adding their own margin. By the time goods reach the shelf, prices are inflated and margins for the store owner are razor-thin.
+Neighborhood stores everywhere are stuck in a broken supply chain. A small warung that wants to restock cooking oil or rice has no direct access to factory pricing — they're forced to buy from layers of distributors, each adding their own margin. By the time goods reach the shelf, prices are inflated and margins for the store owner are razor-thin.
 
-On the demand side, villagers have no visibility into what's available nearby or at what price. Without a shared platform, every store is isolated — unable to coordinate purchasing power with neighbors who need the same goods.
+On the demand side, consumers have no visibility into what's available nearby or at what price. Without a shared platform, every store is isolated — unable to coordinate purchasing power with neighbors who need the same goods.
 
-Additionally, existing digital commerce solutions aren't built for this context:
-- 📶 Connectivity is unreliable — 2G/3G in the field is still the norm
-- 📱 Devices are low-end — heavy apps simply don't run well
+Additionally, existing digital commerce solutions aren't built for real-world local economies:
+- 📶 Connectivity can be unreliable — not every area enjoys stable broadband
+- 📱 Devices vary widely — heavy apps exclude a large portion of users on budget hardware
 - ☁️ Cloud-first platforms are expensive and create vendor dependency that communities can't sustain
 
-**Lokalaku exists to fix this.** By pooling demand across village stores, we unlock factory-direct wholesale pricing that no single warung could access alone. By connecting consumers to their nearest stores through a shared platform, we create a local digital economy that is transparent, fair, and entirely owned by the community it serves — running on infrastructure they can afford and control.
+**Lokalaku exists to fix this.** By pooling demand across local stores, we unlock factory-direct wholesale pricing that no single warung could access alone. By connecting consumers to their nearest stores through a shared platform, we create a local digital economy that is transparent, fair, and entirely owned by the community it serves — running on infrastructure they can afford and control.
 
 ---
 
 ## 🌾 What Is Lokalaku?
 
-Lokalaku is a **polyglot monorepo** with a single mission: give rural communities full control over their own local economy. It orchestrates an entire local supply chain — from factory-direct wholesale sourcing all the way to villagers buying rice at their neighborhood warung — through five purpose-built apps sharing a single, high-performance API core.
+Lokalaku is a **polyglot monorepo** with a single mission: give communities full control over their own local economy. It orchestrates an entire local supply chain — from factory-direct wholesale sourcing all the way to consumers buying goods at their neighborhood warung — through five purpose-built apps sharing a single, high-performance API core.
 
 ### Core Pillars
 
@@ -44,7 +44,7 @@ Lokalaku is a **polyglot monorepo** with a single mission: give rural communitie
 | 🔗 **Pool Buying (Hulu Engine)** | Merchants aggregate small orders into a single collective pool. When the wholesaler's minimum order quantity (MOQ) is reached, factory-direct pricing unlocks for everyone. |
 | 🛒 **Proximity Retail (Hilir Engine)** | Consumers discover what's available near them, filtered by geographic cluster — no artificial price wars between neighboring stores. |
 | 📴 **Offline-First Operations** | Merchant POS and courier apps commit to local storage first, syncing to the backend the moment connectivity returns. |
-| 🏛️ **Data Sovereignty** | All data is strictly scoped to a `village_cluster_id`. One village's records can never bleed into another's. |
+| 🏛️ **Data Sovereignty** | All data is strictly scoped to a `cluster_id`. One community's records can never bleed into another's. |
 | 🚫 **Zero Vendor Lock-In** | Runs on any cheap Linux VPS with Docker Compose. No proprietary cloud APIs, no managed lock-in. |
 
 ---
@@ -75,11 +75,11 @@ Lokalaku is a **polyglot monorepo** with a single mission: give rural communitie
 
 | Role | App | Core Responsibility |
 |:---|:---|:---|
-| **Consumer** (Warga) | `consumer_app` + `website` | Browse nearby stores, join pool previews, place everyday orders, track delivery live |
+| **Consumer** | `consumer_app` + `website` | Browse nearby stores, join pool previews, place everyday orders, track delivery live |
 | **Merchant** (Warung) | `merchant_app` | Offline-capable POS for counter sales; commit to wholesale pool orders |
 | **Courier** | `courier_app` | Claim pool-order batch deliveries; stream GPS telemetry; mark stops complete |
 | **Wholesaler** | `wholesaler_app` | Manage product catalogue & MOQs; monitor pool commitments; advance fulfillment status |
-| **Superadmin** | `backoffice_web` | Create village clusters; verify wholesalers; platform-wide health monitoring |
+| **Superadmin** | `backoffice_web` | Create local clusters; verify wholesalers; platform-wide health monitoring |
 
 ---
 
@@ -91,7 +91,7 @@ lokalaku-id/
 ├── apps/
 │   ├── api/              🐹  Golang — High-performance REST API core
 │   ├── website/          🚀  Astro — SEO-optimized public catalog (Islands Architecture)
-│   ├── consumer_app/     📱  Flutter — Android APK + Web PWA for villagers
+│   ├── consumer_app/     📱  Flutter — Android APK + Web PWA for consumers
 │   ├── merchant_app/     📱  Flutter — Android phone & tablet POS
 │   ├── courier_app/      📱  Flutter — Android phone, portrait-optimized
 │   ├── wholesaler_app/   🖥️   Flutter — Desktop + Web for wholesale operators
@@ -121,7 +121,7 @@ lokalaku-id/
 |:---|:---|
 | Language | Go (idiomatic, stdlib-first, single binary) |
 | Router | Chi / Fiber (lightweight) |
-| Database | PostgreSQL 17 (ACID, multi-tenant scoped by `village_cluster_id`) |
+| Database | PostgreSQL 17 (ACID, multi-tenant scoped by `cluster_id`) |
 | Cache | Redis (low-latency read aggregates for public search) |
 | Email (Dev) | Mailpit |
 | Observability | OpenTelemetry → Jaeger |
@@ -289,16 +289,16 @@ pnpm cleanup              # remove all deps, caches, and build artefacts
 ## 🏗️ Architecture Decisions
 
 ### Why not a cloud-native stack?
-Lokalaku targets village cooperatives that cannot afford AWS, GCP, or Firebase lock-in. The entire system must run on a ₹500/month (or equivalent) Linux VPS with nothing more than Docker Compose.
+Lokalaku targets communities and independent operators that cannot afford AWS, GCP, or Firebase lock-in. The entire system must run on a low-cost Linux VPS with nothing more than Docker Compose.
 
 ### Why Riverpod v3+ (not Bloc/GetX)?
 `Notifier<State>` + `NotifierProvider` provides compile-time safety, code generation support, and no inheritance-based boilerplate. It aligns with the offline-first, testable architecture the apps require.
 
 ### Why Astro Islands for the website?
-Village search landing pages must be fully server-rendered for SEO (Google needs to index `lokalaku.in/desa-sukamaju` with zero JS). Only the live search box is hydrated client-side, keeping the global bundle near zero.
+Local store search landing pages must be fully server-rendered for SEO (Google needs to index `lokalaku.in/toko-sukamaju` with zero JS). Only the live search box is hydrated client-side, keeping the global bundle near zero.
 
-### Why strict `village_cluster_id` scoping?
-Data sovereignty is non-negotiable. A merchant in Desa Sukamaju must never see, affect, or be affected by data from Desa Ciwidey. Isolation is enforced at the database query and API middleware layers simultaneously.
+### Why strict `cluster_id` scoping?
+Data sovereignty is non-negotiable. A merchant in one cluster must never see, affect, or be affected by data from another cluster. Isolation is enforced at the database query and API middleware layers simultaneously.
 
 ---
 
@@ -324,7 +324,7 @@ Lokalaku is open-source software released under the [MIT License](LICENSE).
 
 <div align="center">
 
-Built with ❤️ for rural communities across Indonesia.
+Built with ❤️ for communities across Indonesia.
 
 *Lokalaku — Lokal, Berdaya, Mandiri.*
 

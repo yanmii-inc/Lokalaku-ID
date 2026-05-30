@@ -39,8 +39,9 @@
 - Tapping the notification takes the consumer directly to their order.
 
 ### REQ-CS-003 — Nearby Store Discovery
-- By default, the browse view shows stores within the consumer's village cluster.
-- Location-based sorting (showing the closest stores first) is strictly opt-in: the consumer is asked for permission before their location is used. If permission is declined or unavailable, the app shows the full cluster listing — it never freezes or crashes.
+- The browse view shows stores sorted by **physical proximity** to the consumer's location. A store's `village_cluster_id` has no bearing on whether it appears in discovery results — a consumer near a village boundary must be able to find merchants from adjacent clusters if those merchants are physically closer to them.
+- Location permission is strictly opt-in: the consumer is asked before their location is used. If permission is declined or unavailable, the app falls back to a default listing (e.g. alphabetical or featured) — it never freezes or crashes.
+- `village_cluster_id` governs operational context (Pool Buying, data tenancy, courier dispatch) and must never be used to filter or hide merchants from a consumer's browse view.
 
 ### REQ-CS-004 — Works on Android and Browser
 - The consumer experience is consistent whether using the Android app or a web browser — the same features are available on both.
@@ -67,10 +68,10 @@
 
 ## 5. Data Flows
 
-- **Store discovery:** When a consumer opens the browse screen, the platform sends them a list of stores in their village cluster. If location permission has been granted, stores are sorted by proximity.
+- **Store discovery:** When a consumer opens the browse screen, the platform returns stores sorted by physical proximity to the consumer's location, regardless of cluster membership. If location permission has been granted, proximity sorting is applied. If not, a default listing is shown. No cluster boundary is applied to what stores are visible.
 - **Placing an order:** When the consumer confirms their cart, the order details are sent to the platform and a confirmation is returned to the consumer's screen.
 - **Order tracking:** Whenever a merchant or courier updates an order's status, the platform immediately notifies the consumer's app or browser. The update appears as a notification and refreshes the order screen.
-- **Village data isolation:** All data shown to a consumer — stores, products, and orders — belongs exclusively to their village cluster. No data from other clusters is ever surfaced.
+- **Data isolation scope:** Operational and transactional data (Pool Buying, merchant inventory management, courier dispatch, wholesaler assignments) is strictly scoped to `village_cluster_id`. Consumer-facing discovery — store listings and product browsing — is proximity-driven and is not restricted by cluster boundaries. Order data is scoped to the individual consumer's account regardless of cluster.
 
 ---
 
@@ -80,3 +81,10 @@
 - Courier tracking map → `courier_app`
 - Public SEO catalog → `website`
 - Admin / wholesaler dashboard → `backoffice_web`
+
+## 7. Open Questions
+
+| # | Question | Impact |
+| :--- | :--- | :--- |
+| OQ-01 | When a consumer orders from a merchant in an adjacent cluster, which courier pool handles the delivery — the merchant's cluster or determined by delivery radius? | Affects `courier_app` dispatch logic and `REQ-CO-002` |
+| OQ-02 | Is there a configurable maximum discovery radius, or is all proximity-based discovery unbounded? | Affects API query performance and consumer UX in dense areas |

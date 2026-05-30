@@ -1,6 +1,6 @@
 # 🤖 LOKALAKU: AI AGENTS & CO-PILOT CONFIGURATION GUIDELINES (ZED NATIVE)
 
-Welcome, AI Agent / Co-pilot. You are assisting in building **Lokalaku**, an open-source, decentralized alternative platform to give rural communities full control over their own local economy. It orchestrates an entire local supply chain — from factory-direct wholesale sourcing all the way to villagers buying rice at their neighborhood warung — through five purpose-built apps sharing a single, high-performance API core. This is a **Polyglot Monorepo** containing Golang (API), Flutter (Apps), and Astro (Public Website).
+Welcome, AI Agent / Co-pilot. You are assisting in building **Lokalaku**, an open-source, decentralized alternative platform to give communities full control over their own local economy. It orchestrates an entire local supply chain — from factory-direct wholesale sourcing all the way to consumers buying goods at their neighborhood warung — through five purpose-built apps sharing a single, high-performance API core. This is a **Polyglot Monorepo** containing Golang (API), Flutter (Apps), and Astro (Public Website).
 
 To ensure architectural consistency, reduce code debt, and prevent cross-framework pollution, you **MUST** strictly follow the guidelines below based on the workspace context you are operating in.
 
@@ -10,7 +10,7 @@ To ensure architectural consistency, reduce code debt, and prevent cross-framewo
 
 1. **Zero Vendor Lock-In:** All systems must be deployable on a bare-metal VPS or Docker container. Avoid cloud-native proprietary APIs (e.g., Vercel-specific features, AWS-only tools).
 2. **Offline-First for Operations:** Mobile apps (Merchant/Courier) must gracefully handle low/no internet scenarios using local caching.
-3. **Data Sovereignty:** Data belongs to the specific village cluster (`village_cluster_id`). Ensure isolation between different village data.
+3. **Data Sovereignty:** Data belongs to the specific local cluster (`cluster_id`). Ensure strict isolation between different cluster datasets.
 4. **Efficiency Over Hype:** Write memory-efficient, low-allocation code. We target low-end devices and cheap infrastructure.
 
 ---
@@ -20,10 +20,145 @@ To ensure architectural consistency, reduce code debt, and prevent cross-framewo
 To save API input tokens and prevent context bloating inside the Zed Assistant Panel, obey these execution rules:
 
 * **No Blind Indexing:** Do NOT read or demand full external documentation files for simple syntax fixes, typos, formatting, or isolated UI styling.
-* **Conditional Trigger:** You are ONLY permitted to request or query `/PRD.md` or stack-specific `GUARDRAILS.md` when:
-    1. The human developer initiates a NEW subsystem, API design, or database migration.
-    2. You encounter an ambiguous architectural decision regarding core business flows (e.g., Pool Buying metrics or offline data synchronization sync queues).
+* **Conditional Trigger:** Use the **Document Map** below to determine exactly which files to read. Reading more than the tier requires is wasteful. Reading less causes errors.
 * **Targeted Diffs Only:** Do NOT rewrite hundreds of unchanged lines of code. Provide minimal code blocks or targeted updates.
+
+---
+
+## 🗺️ DOCUMENT MAP — INTELLIGENT ROUTING
+
+**Before fetching any file, classify your task using the tiers below. Fetch only what the tier requires.**
+
+---
+
+### Tier 0 — Proceed immediately, no extra reads
+
+Simple, self-contained changes with no domain ambiguity:
+- Typos, formatting, import ordering, linter/vet errors
+- Isolated UI colour token swaps or spacing adjustments
+- Adding a null check or guard clause to existing logic
+- Renaming a local variable
+
+→ **Fetch nothing. Proceed.**
+
+---
+
+### Tier 1 — Local scope: read one local AGENTS.md
+
+You are modifying code within a known app or package, and the rules of that context are all you need:
+- Adding a screen, widget, or method to an existing feature
+- Fixing a bug that is clearly contained within one app or package
+
+| Working in | Read this file |
+|:---|:---|
+| `apps/api/` | `apps/api/AGENTS.md` (if it exists) |
+| `apps/consumer_app/` | `apps/consumer_app/AGENTS.md` |
+| `apps/merchant_app/` | `apps/merchant_app/AGENTS.md` |
+| `apps/courier_app/` | `apps/courier_app/AGENTS.md` |
+| `apps/wholesaler_app/` | `apps/wholesaler_app/AGENTS.md` |
+| `apps/backoffice_web/` | `apps/backoffice_web/AGENTS.md` |
+| `apps/website/` | `apps/website/AGENTS.md` |
+| `packages/flutter/*` | `packages/flutter/AGENTS.md` |
+
+→ Read **one file only**. Stop there.
+
+---
+
+### Tier 2 — New feature or endpoint: read local PRD + design doc
+
+You are implementing something new within a known scope, or picking up a defined task:
+- New API endpoint, new DB table, new Flutter screen tied to a PRD requirement
+- Implementing a feature from a task in `docs/tasks/`
+
+| Working in | Read these files |
+|:---|:---|
+| Go API work | `apps/api/PRD.md` + `apps/api/GUARDRAILS.md` |
+| Any Flutter app feature | `apps/<app>/PRD.md` + `docs/design/NN-<feature>.md` (if exists) |
+| Astro/website work | `apps/website/PRD.md` + `apps/website/GUARDRAILS.md` |
+| Shared Flutter package | `packages/flutter/AGENTS.md` |
+
+→ Read the **local PRD** for the affected app. Read the **design doc** if one covers this feature. Stop there.
+
+---
+
+### Tier 3 — Cross-cutting architecture: read root PRD + check ADRs
+
+You are making a decision that affects multiple apps, the data model, or a platform-wide pattern:
+- Choosing a library or dependency
+- Modifying the Pool Order state machine, auth flow, or sync queue strategy
+- Adding a new entity to `lokalaku_domain`
+- Adding or removing a shared package
+
+| Action | Read this |
+|:---|:---|
+| Understand full product scope | `PRD.md` (root) |
+| Resolve ambiguous domain terminology | `docs/GLOSSARY.md` |
+| Check if this decision was already made | `docs/decisions/ADR-*.md` |
+
+→ **After completing the task:** create a new ADR in `docs/decisions/` if the architectural choice isn't already recorded.
+
+---
+
+### Tier 4 — Historical rationale: read ADRs + milestone docs
+
+You need to understand why something was designed a certain way before extending it:
+- "Why does auth use opaque refresh tokens and not long-lived JWTs?"
+- "Why Hive and not SQLite for offline storage?"
+- Reviewing a past milestone before adding a new feature on top of it
+
+| Action | Read this |
+|:---|:---|
+| Find the architectural decision | `docs/decisions/ADR-*.md` |
+| Understand milestone history and rationale | `docs/milestones/CHANGELOG.md` → then the specific `MXXX-*.md` |
+
+→ Read the **specific ADR or milestone doc**. Do not read all of them.
+
+---
+
+### Tier 5 — Task planning: read task index + templates
+
+You are decomposing PRD requirements into tasks, reviewing what work exists, or generating GitHub Issues:
+
+| Action | Do this |
+|:---|:---|
+| Review all tasks and their status | Read `docs/tasks/TASK-INDEX.md` |
+| Create a new task file | Copy `docs/tasks/TASK-TEMPLATE.md` |
+| Push unlinked tasks to GitHub Issues | Run `python3 scripts/gh_create_issues.py --dry-run` first, then without `--dry-run` |
+
+---
+
+### Agent Skills — Invoke for Recurring Doc Workflows
+
+These project-local skills encode the exact steps for common documentation tasks.
+Zed will suggest them automatically when your prompt matches — or you can invoke them via `/`.
+
+| Skill | Trigger phrases | What it does |
+|:---|:---|:---|
+| `write-adr` | "write an ADR for X", "document why we chose Y", "record this decision" | Reads the template, numbers the next ADR, creates the file, links it to the active milestone |
+| `write-task` | "create a task for X", "break down REQ-XX", "add a work item" | Reads TASK-INDEX + template, creates the task file, updates the index row |
+| `record-milestone` | "update the milestone", "mark M00X as done", "checkpoint our progress" | Updates the milestone doc + CHANGELOG.md with decisions, deferred work, and lessons learned |
+
+---
+
+### Full Document Registry
+
+| Document | Path | Tier |
+|:---|:---|:---:|
+| Global AI rules + routing (this file) | `AGENTS.md` | Auto-loaded |
+| Domain glossary | `docs/GLOSSARY.md` | 3 |
+| Ecosystem PRD (product vision) | `PRD.md` | 3 |
+| API business rules | `apps/api/PRD.md` | 2 |
+| API concurrency + memory constraints | `apps/api/GUARDRAILS.md` | 2 |
+| Per-app product requirements | `apps/<app>/PRD.md` | 2 |
+| Per-app AI rules | `apps/<app>/AGENTS.md` | 1 |
+| Shared packages rules | `packages/flutter/AGENTS.md` | 1 |
+| Website SEO + bundle constraints | `apps/website/GUARDRAILS.md` | 2 |
+| Feature flow designs | `docs/design/NN-<feature>.md` | 2 |
+| Architecture Decision Records | `docs/decisions/NNN-<title>.md` | 3–4 |
+| Milestone changelog index | `docs/milestones/CHANGELOG.md` | 4 |
+| Specific milestone rationale | `docs/milestones/MXXX-<title>.md` | 4 |
+| Task registry | `docs/tasks/TASK-INDEX.md` | 5 |
+| Task template | `docs/tasks/TASK-TEMPLATE.md` | 5 |
 
 ---
 
@@ -69,9 +204,9 @@ lokalaku-id/
 * **Sub-Projects Rules:**
     * `/apps/merchant_app`: Responsive layout (Tablet & Phone) optimized for fast item-tapping and cash register flow (POS).
     * `/apps/courier_app`: Phone layout, highly optimized for portrait mode, map/GPS tracking efficiency, and background notification reliability.
-    * `/apps/consumer_app`: Cross-platform for Android (Native APK) **and Web (Flutter Web)**. Android remains the primary target for end-consumers/villagers. Web build must be responsive (mobile-first) and deployed as a PWA where possible. Use Web Push API for browser-side notifications; native push (FCM) remains the primary channel on Android. Do NOT use platform-specific packages without a proper `kIsWeb` guard. Localized proximity browsing must degrade gracefully on web (no GPS hard-crash; prompt permission before use).
-    * `/apps/wholesaler_app`: Flutter Desktop **and** Web app for Wholesale Operators and Factory Hubs. Desktop (macOS/Linux/Windows) is the primary target; Web build is a supported secondary target. Manages their product catalogue, monitors Pool Order commitments from merchants, and advances pool fulfillment status. Scoped strictly to the wholesaler's own products and assigned village clusters. Apply `kIsWeb` guards for any desktop-only API usage (e.g. file system access for bulk import).
-    * `/apps/backoffice_web`: Platform Superadmin dashboard for Lokalaku operators only. Manages village cluster creation, wholesaler verification, platform-wide configuration, and cross-cluster health monitoring. Do NOT add wholesaler stock management or merchant/courier account flows here — those belong in `wholesaler_app` and the respective operator apps.
+    * `/apps/consumer_app`: Cross-platform for Android (Native APK) **and Web (Flutter Web)**. Android remains the primary target for end-consumers. Web build must be responsive (mobile-first) and deployed as a PWA where possible. Use Web Push API for browser-side notifications; native push (FCM) remains the primary channel on Android. Do NOT use platform-specific packages without a proper `kIsWeb` guard. Localized proximity browsing must degrade gracefully on web (no GPS hard-crash; prompt permission before use).
+    * `/apps/wholesaler_app`: Flutter Desktop **and** Web app for Wholesale Operators and Factory Hubs. Desktop (macOS/Linux/Windows) is the primary target; Web build is a supported secondary target. Manages their product catalogue, monitors Pool Order commitments from merchants, and advances pool fulfillment status. Scoped strictly to the wholesaler's own products and assigned clusters. Apply `kIsWeb` guards for any desktop-only API usage (e.g. file system access for bulk import).
+    * `/apps/backoffice_web`: Platform Superadmin dashboard for Lokalaku operators only. Manages cluster creation, wholesaler verification, platform-wide configuration, and cross-cluster health monitoring. Do NOT add wholesaler stock management or merchant/courier account flows here — those belong in `wholesaler_app` and the respective operator apps.
 * **State Management:** Riverpod v3+ only. Use `Notifier<State>` + `NotifierProvider`. Do NOT use `StateNotifier`, Bloc, GetX, or Provider.
 * **Prohibited:** Do NOT suggest embedding web views for core functionalities. All checkout and scanning flows must be native components.
 
