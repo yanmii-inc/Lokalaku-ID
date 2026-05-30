@@ -1,0 +1,23 @@
+# https://moonrepo.dev/docs/config/project
+# yaml-language-server: $schema=https://moonrepo.dev/schemas/project.json
+$schema: "https://moonrepo.dev/schemas/project.json"
+
+type: library
+language: dart
+
+dependsOn:
+  - "domain"
+  - "core_network"
+  - "core_auth"
+
+tasks:
+  # Code generation (repository implementations may use json_serializable)
+  build-runner:
+    command: dart run build_runner build --delete-conflicting-outputs
+    toolchain: system
+    deps:
+      - "~:get"
+    inputs:
+      - "lib/**/*.dart"
+    outputs:
+      - "lib/**/*.g.dart"

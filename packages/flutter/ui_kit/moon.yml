@@ -1,0 +1,9 @@
+# https://moonrepo.dev/docs/config/project
+# yaml-language-server: $schema=https://moonrepo.dev/schemas/project.json
+$schema: "https://moonrepo.dev/schemas/project.json"
+
+type: library
+language: dart
+
+# ui_kit has no internal package dependencies.
+# It must never import from domain, data, or any other lokalaku_* package.

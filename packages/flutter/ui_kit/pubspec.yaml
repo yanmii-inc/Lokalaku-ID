@@ -1,0 +1,19 @@
+name: lokalaku_ui_kit
+description: >
+  Lokalaku shared design system — colors, typography, spacing tokens,
+  and reusable widgets. Zero business logic. Zero network calls.
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0

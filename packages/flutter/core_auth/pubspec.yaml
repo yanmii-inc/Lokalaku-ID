@@ -1,0 +1,24 @@
+name: lokalaku_core_auth
+description: >
+  Authentication, session management, and token lifecycle.
+  Handles login, logout, and transparent JWT refresh.
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_secure_storage: ^9.2.2
+  lokalaku_domain:
+    path: ../domain
+  lokalaku_core_network:
+    path: ../core_network
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0

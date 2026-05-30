@@ -1,0 +1,26 @@
+name: lokalaku_data
+description: >
+  Repository interfaces and implementations for the Lokalaku platform.
+  Bridges the domain layer to the network and auth layers.
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  lokalaku_domain:
+    path: ../domain
+  lokalaku_core_network:
+    path: ../core_network
+  lokalaku_core_auth:
+    path: ../core_auth
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.9
