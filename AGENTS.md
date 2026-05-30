@@ -1,6 +1,6 @@
 # 🤖 LOKALAKU: AI AGENTS & CO-PILOT CONFIGURATION GUIDELINES (ZED NATIVE)
 
-Welcome, AI Agent / Co-pilot. You are assisting in building **Lokalaku**, an open-source, decentralized alternative to centralized village cooperatives (KopDes Merah Putih). This is a **Polyglot Monorepo** containing Golang (API), Flutter (Apps), and Astro (Public Website).
+Welcome, AI Agent / Co-pilot. You are assisting in building **Lokalaku**, an open-source, decentralized alternative platform to give rural communities full control over their own local economy. It orchestrates an entire local supply chain — from factory-direct wholesale sourcing all the way to villagers buying rice at their neighborhood warung — through five purpose-built apps sharing a single, high-performance API core. This is a **Polyglot Monorepo** containing Golang (API), Flutter (Apps), and Astro (Public Website).
 
 To ensure architectural consistency, reduce code debt, and prevent cross-framework pollution, you **MUST** strictly follow the guidelines below based on the workspace context you are operating in.
 
