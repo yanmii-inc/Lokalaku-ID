@@ -1,0 +1,49 @@
+# https://moonrepo.dev/docs/config/tasks
+# yaml-language-server: $schema=https://moonrepo.dev/schemas/tasks.json
+$schema: "https://moonrepo.dev/schemas/tasks.json"
+
+# Inherited by all projects whose moon.yml sets: language: dart
+inheritedBy:
+  language: dart
+
+tasks:
+  # Install dependencies
+  get:
+    command: flutter pub get
+    toolchain: system
+    inputs:
+      - "pubspec.yaml"
+      - "pubspec.lock"
+
+  # Static analysis
+  lint:
+    command: flutter analyze --fatal-infos
+    toolchain: system
+    deps:
+      - "~:get"
+    inputs:
+      - "lib/**/*.dart"
+      - "test/**/*.dart"
+      - "analysis_options.yaml"
+
+  # Formatting (applies changes)
+  format:
+    command: dart format lib/ test/
+    toolchain: system
+    options:
+      cache: false
+
+  # Formatting check (CI — fails if files would change)
+  format-check:
+    command: dart format lib/ test/ --set-exit-if-changed
+    toolchain: system
+
+  # Run tests
+  test:
+    command: flutter test
+    toolchain: system
+    deps:
+      - "~:get"
+    inputs:
+      - "lib/**/*.dart"
+      - "test/**/*.dart"

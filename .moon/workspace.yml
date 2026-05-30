@@ -1,9 +1,9 @@
 # https://moonrepo.dev/docs/config/workspace
 # yaml-language-server: $schema=https://moonrepo.dev/schemas/workspace.json
-$schema: 'https://moonrepo.dev/schemas/workspace.json'
+$schema: "https://moonrepo.dev/schemas/workspace.json"
 
 # Require a specific version of moon while running commands, otherwise fail.
-versionConstraint: '>=2.1.0'
+versionConstraint: ">=2.1.0"
 
 vcs:
   client: git
@@ -25,8 +25,8 @@ pipeline:
 docker:
   scaffold:
     configsPhaseGlobs:
-      - '**/.npmrc'
-      - '**/package.json'
+      - "**/.npmrc"
+      - "**/package.json"
   prune:
     deleteVendorDirectories: false
     installToolchainDependencies: true
@@ -37,33 +37,33 @@ docker:
 # and cannot reference projects located outside the workspace boundary.
 projects:
   globs:
-    - 'apps/*'
-    - 'infra/*'
-    - 'packages/*'
+    - "apps/*"
+    - "infra/*"
+    - "packages/flutter/*" # individual Dart/Flutter packages (ui_kit, domain, etc.)
 
 # Monorepo package templates to use when generating new projects.
 # @see: https://moonrepo.dev/docs/config/workspace#templates
 generator:
   templates:
-    - 'https://oss.zero-one-group.com/monorepo/templates/ansible.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/astro.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/expo.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/fastapi-ai.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/gitlab-cicd.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/go-clean.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/go-modular.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/load-balancer.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/monitoring.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/nextjs.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/phoenix.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/postgresql.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/react-app.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/react-ssr.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/tanstack-start.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/shared-ui.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/squidproxy.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/strapi.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/swarm.zip'
-    - 'https://oss.zero-one-group.com/monorepo/templates/terragrunt.zip'
+    - "https://oss.zero-one-group.com/monorepo/templates/ansible.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/astro.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/expo.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/fastapi-ai.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/gitlab-cicd.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/go-clean.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/go-modular.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/load-balancer.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/monitoring.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/nextjs.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/phoenix.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/postgresql.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/react-app.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/react-ssr.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/tanstack-start.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/shared-ui.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/squidproxy.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/strapi.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/swarm.zip"
+    - "https://oss.zero-one-group.com/monorepo/templates/terragrunt.zip"
     # Uncomment to enable local templates or debug custom templates.
-    - './templates'
+    - "./templates"
