@@ -94,6 +94,14 @@ blob-report/
 # Sentry Config File
 .sentryclirc
 
+# Firebase / Google Services (contain project credentials)
+google-services.json
+GoogleService-Info.plist
+
+# Archives
+*.zip
+*.tar.gz
+
 # Storybook
 *storybook.log
 storybook-static/
