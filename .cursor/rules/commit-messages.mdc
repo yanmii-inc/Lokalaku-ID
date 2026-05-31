@@ -1,0 +1,26 @@
+---
+description: Commit message format rules for the Lokalaku monorepo. Apply when generating or reviewing git commit messages.
+globs:
+alwaysApply: false
+---
+
+When writing Git commit messages for this repository, always follow the Conventional Commits format defined in `docs/COMMIT_CONVENTION.md`.
+
+Format: `<type>(<scope>): <subject>`
+
+Types: `feat` | `fix` | `docs` | `refactor` | `test` | `chore` | `perf` | `ci` | `revert` | `style`
+
+Valid scopes:
+- Apps: `api` `consumer` `merchant` `courier` `wholesale` `backoffice` `website`
+- Packages: `domain` `data` `core-auth` `core-network` `ui-kit` `utils`
+- Other: `infra` `docs` `workspace`
+
+Rules:
+- Imperative mood: "add X" not "added X"
+- ≤ 72 characters total on the header line
+- No trailing period
+- Acronyms (OTP, JWT, POS, PIN, GPS) may stay uppercase within the subject
+- Include `Implements: REQ-XX-NNN` footer when a PRD requirement is satisfied
+- Include `See: ADR-NNN` footer when an architecture decision is referenced
+- Include `Closes: #NNN` footer when a GitHub issue is resolved
+- Output only the raw commit message — no markdown fences or commentary
