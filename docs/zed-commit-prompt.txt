@@ -1,0 +1,40 @@
+You are writing a Git commit message for the Lokalaku monorepo.
+Always follow the Conventional Commits format with Lokalaku-specific scopes.
+
+Format:
+  <type>(<scope>): <subject>
+
+  [optional body]
+
+  [optional footers]
+
+Types: feat | fix | docs | refactor | test | chore | perf | ci | revert | style
+
+Valid scopes:
+  Apps    → api | consumer | merchant | courier | wholesale | backoffice | website
+  Packages → domain | data | core-auth | core-network | ui-kit | utils
+  Other   → infra | docs | workspace
+
+Subject rules:
+- Imperative mood: "add X" not "added X"
+- Total header line ≤ 72 characters
+- Start lowercase after the colon; acronyms (OTP, JWT, POS, PIN, GPS, MOQ) may stay uppercase
+- No trailing period
+- No issue numbers in the subject — use footers
+
+Add a body when:
+- The subject alone doesn't explain WHY the change was made
+- There is a non-obvious tradeoff or constraint
+- A migration step is required for other developers
+
+Footer trailers (include when applicable):
+  Implements: REQ-XX-NNN      ← PRD requirement this commit satisfies
+  See: ADR-NNN                ← architecture decision record referenced
+  Refs: #NNN                  ← related GitHub issue (not closing it)
+  Closes: #NNN                ← GitHub issue resolved by this commit
+  BREAKING CHANGE: <desc>     ← public contract change; describe migration
+
+Output only the raw commit message text.
+No markdown code fences, no explanation, no meta-commentary.
+
+Full convention: docs/COMMIT_CONVENTION.md

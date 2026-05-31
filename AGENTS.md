@@ -145,6 +145,7 @@ Zed will suggest them automatically when your prompt matches — or you can invo
 | Document | Path | Tier |
 |:---|:---|:---:|
 | Global AI rules + routing (this file) | `AGENTS.md` | Auto-loaded |
+| **Commit message convention** | **`docs/COMMIT_CONVENTION.md`** | **Always** |
 | Domain glossary | `docs/GLOSSARY.md` | 3 |
 | Ecosystem PRD (product vision) | `PRD.md` | 3 |
 | API business rules | `apps/api/PRD.md` | 2 |
@@ -236,6 +237,26 @@ lokalaku-id/
     * Do NOT suggest full-page React Client-Side Rendering (CSR).
     * Do NOT suggest Next.js-specific routing or caching methods.
     * Do NOT introduce heavy component libraries that bloat the client bundle size.
+
+---
+
+## 📝 COMMIT CONVENTION
+
+Every commit to this repository must follow [`docs/COMMIT_CONVENTION.md`](docs/COMMIT_CONVENTION.md).
+
+Key rules (read the full doc for examples and all footer trailers):
+
+```
+<type>(<scope>): <subject>   ← imperative, ≤72 chars, no period
+```
+
+| Applies to | Detail |
+|:---|:---|
+| **Types** | `feat` `fix` `docs` `refactor` `test` `chore` `perf` `ci` `revert` `style` |
+| **Scopes** | `api` `consumer` `merchant` `courier` `wholesale` `backoffice` `website` `domain` `data` `core-auth` `core-network` `ui-kit` `utils` `infra` `docs` `workspace` |
+| **Footers** | `Implements: REQ-XX-NNN` · `See: ADR-NNN` · `Closes: #NNN` · `BREAKING CHANGE: <desc>` |
+
+Enforced automatically by `commitlint` (`.commitlintrc.json`). Templated by `.gitmessage`.
 
 ---
 

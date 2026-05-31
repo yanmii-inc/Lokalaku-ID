@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# <type>(<scope>): <subject>                         ← this line, ≤72 chars
+# ─────────────────────────────────────────────────────────────────────────────
+# TYPE (pick one):
+#   feat     · new user-visible feature
+#   fix      · bug fix
+#   docs     · documentation only
+#   refactor · restructure, no behaviour change
+#   test     · tests only
+#   chore    · tooling, deps, config
+#   perf     · performance improvement
+#   ci       · CI/CD pipeline
+#   revert   · reverts a previous commit
+#   style    · whitespace / lint only
+#
+# SCOPE (pick the one that owns the change):
+#   Apps   → api | consumer | merchant | courier | wholesale | backoffice | website
+#   Pkgs   → domain | data | core-auth | core-network | ui-kit | utils
+#   Other  → infra | docs | workspace
+#
+# SUBJECT RULES:
+#   · Imperative mood  →  "Add X"  not  "Added X"
+#   · ≤ 72 chars total (type + scope + subject)
+#   · Lowercase after the colon
+#   · No trailing period
+#   · No ticket numbers here — use footers below
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# [leave one blank line, then write the BODY if needed]
+#
+# Explain WHY — the diff already shows WHAT.
+# Wrap at 72 chars. Include migration steps if any.
+# ─────────────────────────────────────────────────────────────────────────────
+# [leave one blank line, then add FOOTERS if applicable]
+#
+# Implements: REQ-XX-NNN        ← PRD requirement this satisfies
+# See: ADR-NNN                  ← architecture decision referenced
+# Refs: #NNN                    ← related GitHub issue (not closing)
+# Closes: #NNN                  ← GitHub issue resolved by this commit
+# BREAKING CHANGE: <desc>       ← public contract change (describe migration)
+# Co-authored-by: Name <email>
+# ─────────────────────────────────────────────────────────────────────────────
+# Full convention: docs/COMMIT_CONVENTION.md
+# Lines starting with # are stripped from the commit message.
