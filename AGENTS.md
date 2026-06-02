@@ -12,6 +12,7 @@ To ensure architectural consistency, reduce code debt, and prevent cross-framewo
 2. **Offline-First for Operations:** Mobile apps (Merchant/Courier) must gracefully handle low/no internet scenarios using local caching.
 3. **Data Sovereignty:** Data belongs to the specific local cluster (`cluster_id`). Ensure strict isolation between different cluster datasets.
 4. **Efficiency Over Hype:** Write memory-efficient, low-allocation code. We target low-end devices and cheap infrastructure.
+5. **Behavioral Test Coverage:** Every new feature (`feat`) must ship with tests that cover its acceptance criteria. Changes to existing features or refactors must verify that existing tests still pass and adjust them to reflect the new behaviour. No `feat` commit is done without test files. No `fix`/`refactor` is done without running the test suite.
 
 ---
 
@@ -196,6 +197,11 @@ lokalaku-id/
 * **Local Boundaries:** Always fetch and obey `/apps/api/GUARDRAILS.md` for specific concurrency and memory constraints.
 * **Prohibited:** Do NOT suggest heavy enterprise frameworks. Keep it single-binary friendly.
 * **Code Style:** Idiomatic Go. Return errors explicitly. Handle `nil` checks thoroughly.
+* **Testing:**
+    * Test files live alongside the code they test: `apps/api/internal/<pkg>/<file>_test.go`.
+    * New handler/service/repo: write a `_test.go` covering the happy path and at least one error path.
+    * Run: `go test ./apps/api/...` — must pass clean before committing.
+    * For `fix`/`refactor`: run the full suite and adjust any tests that reflect the changed behaviour.
 
 ### 2. 📱 Context: `/apps` (Flutter Applications)
 **Role:** Multi-role cross-platform applications with high UX responsiveness.
@@ -210,6 +216,11 @@ lokalaku-id/
     * `/apps/backoffice_web`: Platform Superadmin dashboard for Lokalaku operators only. Manages cluster creation, wholesaler verification, platform-wide configuration, and cross-cluster health monitoring. Do NOT add wholesaler stock management or merchant/courier account flows here — those belong in `wholesaler_app` and the respective operator apps.
 * **State Management:** Riverpod v3+ only. Use `Notifier<State>` + `NotifierProvider`. Do NOT use `StateNotifier`, Bloc, GetX, or Provider.
 * **Prohibited:** Do NOT suggest embedding web views for core functionalities. All checkout and scanning flows must be native components.
+* **Testing:**
+    * Test files live in `apps/<app>/test/` mirroring the `lib/` structure: `lib/features/auth/login_notifier.dart` → `test/features/auth/login_notifier_test.dart`.
+    * New screen/notifier/use-case: write a `_test.dart` covering state transitions and at least one error state.
+    * Run: `flutter test` from the app directory (or `moon run <app>:test` from repo root).
+    * For `fix`/`refactor`: run the suite and update any golden files or state expectations that changed.
 
 ### 3. 📦 Context: `/packages/flutter` (Shared Flutter/Dart Packages)
 **Role:** Reusable building blocks shared across all Flutter apps. Managed as a Melos workspace.
@@ -220,6 +231,11 @@ lokalaku-id/
     * Packages never import from `apps/`. Apps never import from each other.
     * All repository methods return `Result<T>`. Never throw raw exceptions across package boundaries.
     * `publish_to: none` on every package `pubspec.yaml`.
+* **Testing:**
+    * Test files live in `packages/flutter/<pkg>/test/` mirroring the `lib/` structure.
+    * New entity/repo method/utility: write a `_test.dart`. Pure Dart packages (`domain`, `utils`) must have pure Dart tests — no `flutter_test`, no widget binding.
+    * Run: `moon run :test` — must pass clean. Run `moon run <pkg>:test` to test a single package.
+    * For `fix`/`refactor`: run `moon run :test` and adjust tests that reflect the changed behaviour.
 * **Workspace commands (Moon — run from repo root):**
     * `moon run :get` — install dependencies across all Dart packages
     * `moon run :lint` — lint all packages (respects dependency order)
@@ -237,6 +253,7 @@ lokalaku-id/
     * Do NOT suggest full-page React Client-Side Rendering (CSR).
     * Do NOT suggest Next.js-specific routing or caching methods.
     * Do NOT introduce heavy component libraries that bloat the client bundle size.
+* **Testing:** New interactive Islands (React components) must have `.test.ts` / `.spec.ts` files. SSR-only pages have no test requirement unless they contain logic. Run: `pnpm test` (when configured).
 
 ---
 

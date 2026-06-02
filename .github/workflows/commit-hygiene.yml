@@ -1,0 +1,60 @@
+# Commit hygiene gate — implements REQ-INFRA-050.
+# Enforces the commit convention and traceability footers on every PR,
+# mirroring the local .husky/commit-msg hook so `--no-verify` cannot bypass it.
+name: commit-hygiene
+
+on:
+  pull_request:
+    branches: [main]
+
+# A PR's base/head are resolved from the event payload below.
+jobs:
+  commit-hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for commit range)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install commit tooling
+        # Only the commitlint packages are needed for this job. --ignore-scripts
+        # skips the `prepare` lifecycle (moon setup / husky), which is irrelevant
+        # in CI and would otherwise trip on the workspace moon config.
+        run: pnpm install --ignore-scripts
+
+      - name: Resolve PR commit range
+        id: range
+        run: |
+          echo "base=origin/${{ github.base_ref }}" >> "$GITHUB_OUTPUT"
+          echo "head=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+
+      - name: Conventional Commits format (commitlint)
+        run: |
+          pnpm exec commitlint \
+            --from "${{ steps.range.outputs.base }}" \
+            --to "${{ steps.range.outputs.head }}"
+
+      - name: Traceability footers (type-gated)
+        run: |
+          sh scripts/check-commit-footers.sh \
+            "${{ steps.range.outputs.base }}" \
+            "${{ steps.range.outputs.head }}"
+
+      - name: Test file coverage (feat commits must include tests)
+        run: |
+          sh scripts/check-test-files.sh \
+            "${{ steps.range.outputs.base }}" \
+            "${{ steps.range.outputs.head }}"
