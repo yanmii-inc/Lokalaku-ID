@@ -1,8 +1,25 @@
-# 🤖 LOKALAKU: AI AGENTS & CO-PILOT CONFIGURATION GUIDELINES (ZED NATIVE)
+# 🤖 LOKALAKU: AI AGENTS & CO-PILOT CONFIGURATION GUIDELINES
 
 Welcome, AI Agent / Co-pilot. You are assisting in building **Lokalaku**, an open-source, decentralized alternative platform to give communities full control over their own local economy. It orchestrates an entire local supply chain — from factory-direct wholesale sourcing all the way to consumers buying goods at their neighborhood warung — through five purpose-built apps sharing a single, high-performance API core. This is a **Polyglot Monorepo** containing Golang (API), Flutter (Apps), and Astro (Public Website).
 
 To ensure architectural consistency, reduce code debt, and prevent cross-framework pollution, you **MUST** strictly follow the guidelines below based on the workspace context you are operating in.
+
+## 💻 IDE and Editor Support
+
+This workflow supports multiple IDEs and editors with AI assistant integration:
+
+| IDE/Editor | Status | Configuration |
+|:---|:---:|:---|
+| **Zed** | ✅ Primary | Native integration with skills system |
+| **VSCode** | ✅ Supported | `.vscode/` settings, extensions, and launch configs |
+| **Cursor** | ✅ Supported | `.cursor/rules/` for project-specific AI rules |
+| **Claude Code** | ✅ Supported | `.claude/skills/` for reusable workflows |
+| **Neovim** | ✅ Supported | `avante.md` for avante.nvim integration |
+| **JetBrains** | ✅ Supported | `.aiassistant/rules/` for AI Assistant |
+
+**[Full IDE Setup Guide →](./docs/IDE_SETUP.md)**
+
+All IDEs share the same tier-based documentation routing system, core architectural principles, commit conventions, and reusable AI agent skills.
 
 ---
 
@@ -16,9 +33,9 @@ To ensure architectural consistency, reduce code debt, and prevent cross-framewo
 
 ---
 
-## ⚖️ CONTEXT RETRIEVAL ECONOMY & ZED RULES (TOKEN-SAVING)
+## ⚖️ CONTEXT RETRIEVAL ECONOMY (TOKEN-SAVING)
 
-To save API input tokens and prevent context bloating inside the Zed Assistant Panel, obey these execution rules:
+To save API input tokens and prevent context bloat, obey these execution rules:
 
 * **No Blind Indexing:** Do NOT read or demand full external documentation files for simple syntax fixes, typos, formatting, or isolated UI styling.
 * **Conditional Trigger:** Use the **Document Map** below to determine exactly which files to read. Reading more than the tier requires is wasteful. Reading less causes errors.
@@ -128,16 +145,22 @@ You are decomposing PRD requirements into tasks, reviewing what work exists, or 
 
 ---
 
-### Agent Skills — Invoke for Recurring Doc Workflows
+### Agent Skills — Reusable Workflows
 
 These project-local skills encode the exact steps for common documentation tasks.
-Zed will suggest them automatically when your prompt matches — or you can invoke them via `/`.
+They are available in multiple IDEs (Zed, Claude Code, and others with custom prompts).
 
 | Skill | Trigger phrases | What it does |
 |:---|:---|:---|
 | `write-adr` | "write an ADR for X", "document why we chose Y", "record this decision" | Reads the template, numbers the next ADR, creates the file, links it to the active milestone |
 | `write-task` | "create a task for X", "break down REQ-XX", "add a work item" | Reads TASK-INDEX + template, creates the task file, updates the index row |
 | `record-milestone` | "update the milestone", "mark M00X as done", "checkpoint our progress" | Updates the milestone doc + CHANGELOG.md with decisions, deferred work, and lessons learned |
+| `reconcile` | "reconcile", "catch up the docs", "document what we just built" | Syncs documentation with code changes, identifies missing artifacts (Claude Code only) |
+
+**Skill locations:**
+- `.agents/skills/` — Universal skill definitions
+- `.claude/skills/` — Claude Code-specific formats
+- Zed auto-suggests skills when your prompt matches (invoke via `/`)
 
 ---
 
@@ -147,6 +170,7 @@ Zed will suggest them automatically when your prompt matches — or you can invo
 |:---|:---|:---:|
 | Global AI rules + routing (this file) | `AGENTS.md` | Auto-loaded |
 | **Commit message convention** | **`docs/COMMIT_CONVENTION.md`** | **Always** |
+| IDE setup guide | `docs/IDE_SETUP.md` | Reference |
 | Domain glossary | `docs/GLOSSARY.md` | 3 |
 | Ecosystem PRD (product vision) | `PRD.md` | 3 |
 | API business rules | `apps/api/PRD.md` | 2 |

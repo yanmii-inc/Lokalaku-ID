@@ -286,6 +286,29 @@ pnpm cleanup              # remove all deps, caches, and build artefacts
 
 ---
 
+## 💻 IDE and Editor Support
+
+The Lokalaku workflow supports multiple IDEs and editors with AI assistant integration:
+
+| IDE/Editor | Status | Configuration |
+|:---|:---:|:---|
+| **Zed** | ✅ Primary | Native integration with AGENTS.md and skills system |
+| **VSCode** | ✅ Supported | `.vscode/` settings, extensions, and launch configs |
+| **Cursor** | ✅ Supported | `.cursor/rules/` for project-specific AI rules |
+| **Claude Code** | ✅ Supported | `.claude/skills/` for reusable workflows |
+| **Neovim** | ✅ Supported | `avante.md` for avante.nvim integration |
+| **JetBrains** | ✅ Supported | `.aiassistant/rules/` for AI Assistant |
+
+**[Full IDE Setup Guide →](./docs/IDE_SETUP.md)**
+
+All IDEs share the same:
+- Tier-based documentation routing system
+- Core architectural principles
+- Commit conventions
+- Reusable AI agent skills (write-adr, write-task, record-milestone, reconcile)
+
+---
+
 ## 🏗️ Architecture Decisions
 
 ### Why not a cloud-native stack?
@@ -308,6 +331,7 @@ Lokalaku is community-driven. Before contributing to any sub-project, please rea
 
 - **Root:** [`AGENTS.md`](./AGENTS.md) — global architectural principles and monorepo rules
 - **Root:** [`PRD.md`](./PRD.md) — full product requirements and business context
+- **IDE Setup:** [`docs/IDE_SETUP.md`](./docs/IDE_SETUP.md) — configure your AI assistant for any supported IDE
 - **API:** [`apps/api/PRD.md`](./apps/api/PRD.md) — backend business rules and data contracts
 - **Flutter Packages:** [`packages/flutter/AGENTS.md`](./packages/flutter/AGENTS.md) — strict package dependency rules
 - **Per-App:** each `apps/*/AGENTS.md` — app-specific guidelines
