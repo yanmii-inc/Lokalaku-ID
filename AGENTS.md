@@ -4,22 +4,7 @@ Welcome, AI Agent / Co-pilot. You are assisting in building **Lokalaku**, an ope
 
 To ensure architectural consistency, reduce code debt, and prevent cross-framework pollution, you **MUST** strictly follow the guidelines below based on the workspace context you are operating in.
 
-## 💻 IDE and Editor Support
-
-This workflow supports multiple IDEs and editors with AI assistant integration:
-
-| IDE/Editor | Status | Configuration |
-|:---|:---:|:---|
-| **Zed** | ✅ Primary | Native integration with skills system |
-| **VSCode** | ✅ Supported | `.vscode/` settings, extensions, and launch configs |
-| **Cursor** | ✅ Supported | `.cursor/rules/` for project-specific AI rules |
-| **Claude Code** | ✅ Supported | `.claude/skills/` for reusable workflows |
-| **Neovim** | ✅ Supported | `avante.md` for avante.nvim integration |
-| **JetBrains** | ✅ Supported | `.aiassistant/rules/` for AI Assistant |
-
-**[Full IDE Setup Guide →](./docs/IDE_SETUP.md)**
-
-All IDEs share the same tier-based documentation routing system, core architectural principles, commit conventions, and reusable AI agent skills.
+> **IDE:** All major IDEs supported. See [`docs/IDE_SETUP.md`](./docs/IDE_SETUP.md). You are running in **Zed** which auto-loads this file as project rules.
 
 ---
 
@@ -188,30 +173,6 @@ They are available in multiple IDEs (Zed, Claude Code, and others with custom pr
 
 ---
 
-## 🗂️ MONOREPO STRUCTURE
-
-```
-lokalaku-id/
-├── apps/
-│   ├── api/              🐹 Golang REST API
-│   ├── website/          🚀 Astro public website
-│   ├── consumer_app/     📱 Flutter — Android + Web/PWA
-│   ├── merchant_app/     📱 Flutter — Android (Tablet + Phone)
-│   ├── courier_app/      📱 Flutter — Android Phone
-│   ├── wholesaler_app/   🖥️  Flutter — Desktop + Web
-│   └── backoffice_web/   🌐 Flutter — Web (Superadmin)
-└── packages/
-    └── flutter/          📦 Shared Dart/Flutter packages
-        ├── ui_kit/           Design system & shared widgets
-        ├── domain/           Pure Dart entities & repository interfaces
-        ├── core_network/     HTTP client & error handling
-        ├── core_auth/        Auth, session & token lifecycle
-        ├── data/             Repository implementations
-        └── utils/            Formatters, validators, extensions
-```
-
----
-
 ## 🛠️ CONTEXT-SPECIFIC AGENT INSTRUCTIONS
 
 ### 1. 🐹 Context: `/apps/api`
@@ -299,14 +260,3 @@ Key rules (read the full doc for examples and all footer trailers):
 
 Enforced automatically by `commitlint` (`.commitlintrc.json`). Templated by `.gitmessage`.
 
----
-
-## 🔄 CROSS-LAYER INTEGRATION CONTRACTS
-
-When generating code that connects multiple layers, always adhere to this routing data flow:
-
-```text
-📱 Flutter Apps & Website ──(REST API)──► [Golang API Core] ◄──(Server-Side Fetch)── 🚀 Astro Website
-         │
-         └── consumes ──► 📦 packages/flutter/* (shared packages)
-```
