@@ -103,7 +103,20 @@ For each Tier 1–3 change:
 - If no matching task: mark as **task needed**
 - If a matching task exists with status `✅ done`: confirm this change closes it
 
-**d) ADR violation check** — read the `AGENTS.md` prohibitions and all existing ADRs for the affected domain.
+**d) Test coverage check** — for each Tier 1–3 code change, check whether corresponding test files exist in the working tree (staged or unstaged):
+
+Test file patterns per stack:
+- Go API (`apps/api/**`): `*_test.go` co-located with the changed file in the same package
+- Flutter apps (`apps/*/lib/**`): `*_test.dart` in `apps/<app>/test/` mirroring the `lib/` path
+- Flutter packages (`packages/flutter/**`): `*_test.dart` in `packages/flutter/<pkg>/test/`
+- Website (`apps/website/**`): `*.test.ts` / `*.spec.ts` alongside or in a `__tests__/` directory
+
+Classification:
+- Change is a **new feature (`feat` type)** + no test files found → mark as **tests needed (blocking)**
+- Change is a **fix/refactor/perf** + no test files touched → mark as **tests to verify (non-blocking)** — remind to run the suite
+- Test files found → mark as covered
+
+**e) ADR violation check** — read the `AGENTS.md` prohibitions and all existing ADRs for the affected domain.
 Flags to raise immediately (block commit and require resolution):
 - Use of `StateNotifier`, `StateNotifierProvider`, `Bloc`, `GetX`, or `Provider` in Flutter code — violates ADR-001
 - Raw exception thrown across a package boundary instead of `Result<T>` — violates `packages/flutter/AGENTS.md`
@@ -135,6 +148,10 @@ Before writing anything, present a summary to the user for confirmation. Format:
 - [ ] PRD delta needed: <new behaviour description> → propose REQ-<prefix>-<next-number> in <PRD file>
 - [ ] Task needed: TASK-<CODE>-<NNN> — <title>
 - [ ] Task to close: TASK-<CODE>-<NNN> (<TASK-ID>) is now done
+
+### Tests
+- [ ] ⛔ Tests needed (feat — blocking): <file(s) to create, e.g. apps/api/internal/auth/otp_test.go>
+- [ ] ⚠  Tests to verify (fix/refactor — run suite): `<test command>`
 
 ### Already covered (no action needed)
 - ✅ REQ-XX-NNN covers <change>

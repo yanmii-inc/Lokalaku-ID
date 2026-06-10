@@ -1,8 +1,10 @@
-# 🤖 LOKALAKU: AI AGENTS & CO-PILOT CONFIGURATION GUIDELINES (ZED NATIVE)
+# 🤖 LOKALAKU: AI AGENTS & CO-PILOT CONFIGURATION GUIDELINES
 
 Welcome, AI Agent / Co-pilot. You are assisting in building **Lokalaku**, an open-source, decentralized alternative platform to give communities full control over their own local economy. It orchestrates an entire local supply chain — from factory-direct wholesale sourcing all the way to consumers buying goods at their neighborhood warung — through five purpose-built apps sharing a single, high-performance API core. This is a **Polyglot Monorepo** containing Golang (API), Flutter (Apps), and Astro (Public Website).
 
 To ensure architectural consistency, reduce code debt, and prevent cross-framework pollution, you **MUST** strictly follow the guidelines below based on the workspace context you are operating in.
+
+> **IDE:** All major IDEs supported. See [`docs/IDE_SETUP.md`](./docs/IDE_SETUP.md). You are running in **Zed** which auto-loads this file as project rules.
 
 ---
 
@@ -12,12 +14,13 @@ To ensure architectural consistency, reduce code debt, and prevent cross-framewo
 2. **Offline-First for Operations:** Mobile apps (Merchant/Courier) must gracefully handle low/no internet scenarios using local caching.
 3. **Data Sovereignty:** Data belongs to the specific local cluster (`cluster_id`). Ensure strict isolation between different cluster datasets.
 4. **Efficiency Over Hype:** Write memory-efficient, low-allocation code. We target low-end devices and cheap infrastructure.
+5. **Behavioral Test Coverage:** Every new feature (`feat`) must ship with tests that cover its acceptance criteria. Changes to existing features or refactors must verify that existing tests still pass and adjust them to reflect the new behaviour. No `feat` commit is done without test files. No `fix`/`refactor` is done without running the test suite.
 
 ---
 
-## ⚖️ CONTEXT RETRIEVAL ECONOMY & ZED RULES (TOKEN-SAVING)
+## ⚖️ CONTEXT RETRIEVAL ECONOMY (TOKEN-SAVING)
 
-To save API input tokens and prevent context bloating inside the Zed Assistant Panel, obey these execution rules:
+To save API input tokens and prevent context bloat, obey these execution rules:
 
 * **No Blind Indexing:** Do NOT read or demand full external documentation files for simple syntax fixes, typos, formatting, or isolated UI styling.
 * **Conditional Trigger:** Use the **Document Map** below to determine exactly which files to read. Reading more than the tier requires is wasteful. Reading less causes errors.
@@ -128,16 +131,22 @@ You are decomposing PRD requirements into tasks, reviewing what work exists, or 
 
 ---
 
-### Agent Skills — Invoke for Recurring Doc Workflows
+### Agent Skills — Reusable Workflows
 
 These project-local skills encode the exact steps for common documentation tasks.
-Zed will suggest them automatically when your prompt matches — or you can invoke them via `/`.
+They are available in multiple IDEs (Zed, Claude Code, and others with custom prompts).
 
 | Skill | Trigger phrases | What it does |
 |:---|:---|:---|
 | `write-adr` | "write an ADR for X", "document why we chose Y", "record this decision" | Reads the template, numbers the next ADR, creates the file, links it to the active milestone |
 | `write-task` | "create a task for X", "break down REQ-XX", "add a work item" | Reads TASK-INDEX + template, creates the task file, updates the index row |
 | `record-milestone` | "update the milestone", "mark M00X as done", "checkpoint our progress" | Updates the milestone doc + CHANGELOG.md with decisions, deferred work, and lessons learned |
+| `reconcile` | "reconcile", "catch up the docs", "document what we just built" | Syncs documentation with code changes, identifies missing artifacts (Claude Code only) |
+
+**Skill locations:**
+- `.agents/skills/` — Universal skill definitions
+- `.claude/skills/` — Claude Code-specific formats
+- Zed auto-suggests skills when your prompt matches (invoke via `/`)
 
 ---
 
@@ -147,6 +156,7 @@ Zed will suggest them automatically when your prompt matches — or you can invo
 |:---|:---|:---:|
 | Global AI rules + routing (this file) | `AGENTS.md` | Auto-loaded |
 | **Commit message convention** | **`docs/COMMIT_CONVENTION.md`** | **Always** |
+| IDE setup guide | `docs/IDE_SETUP.md` | Reference |
 | Domain glossary | `docs/GLOSSARY.md` | 3 |
 | Ecosystem PRD (product vision) | `PRD.md` | 3 |
 | **Infrastructure requirements (operational, not product)** | **`docs/infra/REQUIREMENTS.md`** | **2–3** |
@@ -165,30 +175,6 @@ Zed will suggest them automatically when your prompt matches — or you can invo
 
 ---
 
-## 🗂️ MONOREPO STRUCTURE
-
-```
-lokalaku-id/
-├── apps/
-│   ├── api/              🐹 Golang REST API
-│   ├── website/          🚀 Astro public website
-│   ├── consumer_app/     📱 Flutter — Android + Web/PWA
-│   ├── merchant_app/     📱 Flutter — Android (Tablet + Phone)
-│   ├── courier_app/      📱 Flutter — Android Phone
-│   ├── wholesaler_app/   🖥️  Flutter — Desktop + Web
-│   └── backoffice_web/   🌐 Flutter — Web (Superadmin)
-└── packages/
-    └── flutter/          📦 Shared Dart/Flutter packages
-        ├── ui_kit/           Design system & shared widgets
-        ├── domain/           Pure Dart entities & repository interfaces
-        ├── core_network/     HTTP client & error handling
-        ├── core_auth/        Auth, session & token lifecycle
-        ├── data/             Repository implementations
-        └── utils/            Formatters, validators, extensions
-```
-
----
-
 ## 🛠️ CONTEXT-SPECIFIC AGENT INSTRUCTIONS
 
 ### 1. 🐹 Context: `/apps/api`
@@ -198,6 +184,11 @@ lokalaku-id/
 * **Local Boundaries:** Always fetch and obey `/apps/api/GUARDRAILS.md` for specific concurrency and memory constraints.
 * **Prohibited:** Do NOT suggest heavy enterprise frameworks. Keep it single-binary friendly.
 * **Code Style:** Idiomatic Go. Return errors explicitly. Handle `nil` checks thoroughly.
+* **Testing:**
+    * Test files live alongside the code they test: `apps/api/internal/<pkg>/<file>_test.go`.
+    * New handler/service/repo: write a `_test.go` covering the happy path and at least one error path.
+    * Run: `go test ./apps/api/...` — must pass clean before committing.
+    * For `fix`/`refactor`: run the full suite and adjust any tests that reflect the changed behaviour.
 
 ### 2. 📱 Context: `/apps` (Flutter Applications)
 **Role:** Multi-role cross-platform applications with high UX responsiveness.
@@ -212,6 +203,11 @@ lokalaku-id/
     * `/apps/backoffice_web`: Platform Superadmin dashboard for Lokalaku operators only. Manages cluster creation, wholesaler verification, platform-wide configuration, and cross-cluster health monitoring. Do NOT add wholesaler stock management or merchant/courier account flows here — those belong in `wholesaler_app` and the respective operator apps.
 * **State Management:** Riverpod v3+ only. Use `Notifier<State>` + `NotifierProvider`. Do NOT use `StateNotifier`, Bloc, GetX, or Provider.
 * **Prohibited:** Do NOT suggest embedding web views for core functionalities. All checkout and scanning flows must be native components.
+* **Testing:**
+    * Test files live in `apps/<app>/test/` mirroring the `lib/` structure: `lib/features/auth/login_notifier.dart` → `test/features/auth/login_notifier_test.dart`.
+    * New screen/notifier/use-case: write a `_test.dart` covering state transitions and at least one error state.
+    * Run: `flutter test` from the app directory (or `moon run <app>:test` from repo root).
+    * For `fix`/`refactor`: run the suite and update any golden files or state expectations that changed.
 
 ### 3. 📦 Context: `/packages/flutter` (Shared Flutter/Dart Packages)
 **Role:** Reusable building blocks shared across all Flutter apps. Managed as a Melos workspace.
@@ -222,6 +218,11 @@ lokalaku-id/
     * Packages never import from `apps/`. Apps never import from each other.
     * All repository methods return `Result<T>`. Never throw raw exceptions across package boundaries.
     * `publish_to: none` on every package `pubspec.yaml`.
+* **Testing:**
+    * Test files live in `packages/flutter/<pkg>/test/` mirroring the `lib/` structure.
+    * New entity/repo method/utility: write a `_test.dart`. Pure Dart packages (`domain`, `utils`) must have pure Dart tests — no `flutter_test`, no widget binding.
+    * Run: `moon run :test` — must pass clean. Run `moon run <pkg>:test` to test a single package.
+    * For `fix`/`refactor`: run `moon run :test` and adjust tests that reflect the changed behaviour.
 * **Workspace commands (Moon — run from repo root):**
     * `moon run :get` — install dependencies across all Dart packages
     * `moon run :lint` — lint all packages (respects dependency order)
@@ -239,6 +240,7 @@ lokalaku-id/
     * Do NOT suggest full-page React Client-Side Rendering (CSR).
     * Do NOT suggest Next.js-specific routing or caching methods.
     * Do NOT introduce heavy component libraries that bloat the client bundle size.
+* **Testing:** New interactive Islands (React components) must have `.test.ts` / `.spec.ts` files. SSR-only pages have no test requirement unless they contain logic. Run: `pnpm test` (when configured).
 
 ---
 
@@ -260,14 +262,3 @@ Key rules (read the full doc for examples and all footer trailers):
 
 Enforced automatically by `commitlint` (`.commitlintrc.json`). Templated by `.gitmessage`.
 
----
-
-## 🔄 CROSS-LAYER INTEGRATION CONTRACTS
-
-When generating code that connects multiple layers, always adhere to this routing data flow:
-
-```text
-📱 Flutter Apps & Website ──(REST API)──► [Golang API Core] ◄──(Server-Side Fetch)── 🚀 Astro Website
-         │
-         └── consumes ──► 📦 packages/flutter/* (shared packages)
-```

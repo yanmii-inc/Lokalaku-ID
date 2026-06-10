@@ -67,10 +67,36 @@ Use `docs/tasks/TASK-TEMPLATE.md` as the structure. Fill in all sections:
 
 - **Objective** — one or two sentences: what does this task produce? What is the user-visible or system-level outcome?
 - **Context** — why does this task exist? Link to ADRs, design docs, PRD sections that constrain it.
-- **Acceptance Criteria** — specific, independently verifiable conditions. Minimum three ACs.
+- **Acceptance Criteria** — specific, independently verifiable conditions. Minimum three ACs. Always include one AC that is test-specific: e.g. "Unit tests cover the happy path and at least one error/edge case."
 - **Technical Notes** — implementation hints, constraints, prohibited patterns, related files, commands to run after completing.
 - **Out of Scope** — explicitly list what this task does NOT include. Name the task(s) that own those pieces.
-- **Definition of Done** — standard checklist from the template; adjust the lint/test command to match the domain (`go vet ./apps/api/...` for API, `moon run :lint` for Flutter/packages).
+- **Definition of Done** — use the stack-appropriate checklist below. Never omit the test line.
+
+  **Go API task DoD:**
+  - [ ] Code written and self-reviewed
+  - [ ] `*_test.go` written — happy path + at least one error path
+  - [ ] `go test ./apps/api/...` passes
+  - [ ] `go vet ./apps/api/...` passes
+  - [ ] `TASK-INDEX.md` status updated to `done`
+  - [ ] GitHub issue closed
+
+  **Flutter app task DoD:**
+  - [ ] Code written and self-reviewed
+  - [ ] `*_test.dart` written in `test/` mirroring `lib/` structure
+  - [ ] `flutter test` (or `moon run <app>:test`) passes
+  - [ ] `moon run :lint` passes
+  - [ ] `TASK-INDEX.md` status updated to `done`
+  - [ ] GitHub issue closed
+
+  **Shared Flutter package task DoD:**
+  - [ ] Code written and self-reviewed
+  - [ ] `*_test.dart` written in `packages/flutter/<pkg>/test/`
+  - [ ] `moon run :test` passes (all packages)
+  - [ ] `moon run :lint` passes
+  - [ ] `TASK-INDEX.md` status updated to `done`
+  - [ ] GitHub issue closed
+
+  **For `fix`/`refactor` tasks** (instead of new test): "Existing tests verified and adjusted to reflect changed behaviour — `<test command>` passes clean."
 
 Set `github_issue: null` — it will be filled by the sync script.
 

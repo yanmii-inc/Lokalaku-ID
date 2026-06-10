@@ -52,3 +52,9 @@ jobs:
           sh scripts/check-commit-footers.sh \
             "${{ steps.range.outputs.base }}" \
             "${{ steps.range.outputs.head }}"
+
+      - name: Test file coverage (feat commits must include tests)
+        run: |
+          sh scripts/check-test-files.sh \
+            "${{ steps.range.outputs.base }}" \
+            "${{ steps.range.outputs.head }}"

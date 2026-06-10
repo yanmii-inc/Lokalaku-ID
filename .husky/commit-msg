@@ -3,49 +3,88 @@
 # ── 1. Conventional Commits format ───────────────────────────────────────────
 pnpm exec commitlint --edit "$1"
 
-# ── 2. Traceability footers — required only for behavioral commit types ───────
-# Doc impact follows the commit TYPE, not the diff size:
-#   feat | fix | perf        → behavioral / user-visible → MUST trace to a REQ/ADR/issue
-#   refactor | style | chore → internal / non-behavioral → footer optional (exempt here)
-#   test | ci | docs | revert → no behavioral weight      → exempt
+# ── 2. Type gate — only behavioral types carry further obligations ─────────────
+# feat | fix | perf   → behavioral → check footers + tests
+# everything else     → exempt
 TYPE=$(head -1 "$1" | sed -n 's/^\([a-z]*\).*/\1/p')
 
 case "$TYPE" in
-  feat|fix|perf) ;;   # fall through to enforcement
-  *) exit 0 ;;        # all other types are exempt
+  feat|fix|perf) ;;
+  *) exit 0 ;;
 esac
 
 COMMIT_MSG=$(cat "$1")
 
-if printf '%s' "$COMMIT_MSG" | grep -qE '^(Implements|See|Closes|Refs):'; then
-  exit 0
-fi
-
-# No footer found on a feat/fix/perf — block and explain.
-STAGED=$(git diff --cached --name-only \
-  | grep -E '^(apps/|packages/|docker/|scripts/|compose\.yaml|.*Dockerfile$|\.github/workflows/)')
-
-echo ""
-echo "┌─────────────────────────────────────────────────────────────────┐"
-echo "│  LOKALAKU: '$TYPE' commit is missing traceability footers"
-echo "└─────────────────────────────────────────────────────────────────┘"
-echo ""
-if [ -n "$STAGED" ]; then
-  echo "  Files staged:"
-  printf '%s\n' "$STAGED" | head -5 | sed 's/^/    /'
-  EXTRA=$(printf '%s\n' "$STAGED" | wc -l | tr -d ' ')
-  [ "$EXTRA" -gt 5 ] && echo "    ... and $((EXTRA - 5)) more"
+# ── 3. Traceability footers ───────────────────────────────────────────────────
+if ! printf '%s' "$COMMIT_MSG" | grep -qE '^(Implements|See|Closes|Refs):'; then
+  STAGED=$(git diff --cached --name-only \
+    | grep -E '^(apps/|packages/|docker/|scripts/|compose\.yaml|.*Dockerfile$|\.github/workflows/)')
   echo ""
+  echo "┌─────────────────────────────────────────────────────────────────┐"
+  echo "│  LOKALAKU: '$TYPE' commit is missing traceability footers        │"
+  echo "└─────────────────────────────────────────────────────────────────┘"
+  echo ""
+  if [ -n "$STAGED" ]; then
+    printf '%s\n' "$STAGED" | head -5 | sed 's/^/    /'
+    EXTRA=$(printf '%s\n' "$STAGED" | wc -l | tr -d ' ')
+    [ "$EXTRA" -gt 5 ] && echo "    ... and $((EXTRA - 5)) more"
+    echo ""
+  fi
+  echo "  A '$TYPE' commit must include at least one:"
+  echo "    Implements: REQ-XX-NNN     — product requirement (PRD.md)"
+  echo "    Implements: REQ-INFRA-NNN  — infra requirement (docs/infra/REQUIREMENTS.md)"
+  echo "    See: ADR-NNN               — architecture decision"
+  echo "    Closes: #NNN / Refs: #NNN  — GitHub issue / task"
+  echo ""
+  echo "  → Run /reconcile in Claude Code to back-fill docs and get the footers."
+  echo "  → Genuinely no requirement (rare)? Bypass: git commit --no-verify"
+  echo ""
+  exit 1
 fi
-echo "  A '$TYPE' commit carries behavioral weight and must include at least one:"
-echo ""
-echo "    Implements: REQ-XX-NNN     — satisfies a product requirement (PRD.md)"
-echo "    Implements: REQ-INFRA-NNN  — satisfies an infra requirement (docs/infra/REQUIREMENTS.md)"
-echo "    See: ADR-NNN               — references an architecture decision"
-echo "    Closes: #NNN               — resolves a GitHub issue / task"
-echo "    Refs: #NNN                 — related issue (not closing)"
-echo ""
-echo "  → Run /reconcile in Claude Code to back-fill docs and get the footers."
-echo "  → Genuinely no requirement (rare for feat/fix/perf)? Bypass: git commit --no-verify"
-echo ""
-exit 1
+
+# ── 4. Test file coverage ─────────────────────────────────────────────────────
+# Global Principle 5: feat must ship with tests; fix/perf warns if none staged.
+# Test file patterns per stack:
+#   Go API:    *_test.go
+#   Flutter:   *_test.dart
+#   Website:   *.test.ts | *.spec.ts | *.test.js | *.spec.js
+STAGED_CODE=$(git diff --cached --name-only \
+  | grep -E '^(apps|packages)/' \
+  | grep -E '\.(go|dart|ts|tsx|js|jsx)$' \
+  | grep -vE '(_test\.(go|dart)|\.test\.(ts|js)|\.spec\.(ts|js))$')
+
+STAGED_TESTS=$(git diff --cached --name-only \
+  | grep -E '(_test\.(go|dart)|\.test\.(ts|js)|\.spec\.(ts|js))$')
+
+if [ -n "$STAGED_CODE" ] && [ -z "$STAGED_TESTS" ]; then
+  case "$TYPE" in
+    feat)
+      echo ""
+      echo "┌─────────────────────────────────────────────────────────────────┐"
+      echo "│  LOKALAKU: 'feat' commit has no test files staged                │"
+      echo "└─────────────────────────────────────────────────────────────────┘"
+      echo ""
+      echo "  Every new feature must ship with tests (Global Principle 5)."
+      echo "  No test files found matching:"
+      echo "    Go API:   apps/api/internal/<pkg>/<file>_test.go"
+      echo "    Flutter:  apps/<app>/test/<feature>/<name>_test.dart"
+      echo "    Packages: packages/flutter/<pkg>/test/<name>_test.dart"
+      echo "    Website:  apps/website/src/**/*.test.ts"
+      echo ""
+      echo "  → Add tests covering the ACs in the task, then re-commit."
+      echo "  → Not testable yet (stub/scaffold only)? Bypass: git commit --no-verify"
+      echo ""
+      exit 1
+      ;;
+    fix|perf)
+      echo ""
+      echo "  ⚠  LOKALAKU: '$TYPE' commit has no test files staged."
+      echo "     Verify existing tests still pass and adjust any that changed:"
+      echo "       Go API:  go test ./apps/api/..."
+      echo "       Flutter: moon run :test  (or flutter test from app dir)"
+      echo "     To suppress this warning: git commit --no-verify"
+      echo ""
+      # warning only — do not exit 1
+      ;;
+  esac
+fi
