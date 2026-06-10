@@ -76,6 +76,7 @@ You are implementing something new within a known scope, or picking up a defined
 | Any Flutter app feature | `apps/<app>/PRD.md` + `docs/design/NN-<feature>.md` (if exists) |
 | Astro/website work | `apps/website/PRD.md` + `apps/website/GUARDRAILS.md` |
 | Shared Flutter package | `packages/flutter/AGENTS.md` |
+| Infra work (Docker, Compose, CI/CD, scripts) | `docs/infra/REQUIREMENTS.md` |
 
 → Read the **local PRD** for the affected app. Read the **design doc** if one covers this feature. Stop there.
 
@@ -148,6 +149,7 @@ Zed will suggest them automatically when your prompt matches — or you can invo
 | **Commit message convention** | **`docs/COMMIT_CONVENTION.md`** | **Always** |
 | Domain glossary | `docs/GLOSSARY.md` | 3 |
 | Ecosystem PRD (product vision) | `PRD.md` | 3 |
+| **Infrastructure requirements (operational, not product)** | **`docs/infra/REQUIREMENTS.md`** | **2–3** |
 | API business rules | `apps/api/PRD.md` | 2 |
 | API concurrency + memory constraints | `apps/api/GUARDRAILS.md` | 2 |
 | Per-app product requirements | `apps/<app>/PRD.md` | 2 |
