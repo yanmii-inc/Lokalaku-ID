@@ -3,6 +3,7 @@
 Summary
 - Use one ephemeral git worktree per task/PR instead of creating many worktrees in batch.
 - Keep work isolated, easy to clean up, and traceable to TASK IDs in docs/tasks.
+- PR-first task updates: make all task-file and TASK-INDEX edits in a topic branch and include them in a PR. Merge the PR before the task is considered 'done' on main. Do not change task status directly on main.
 
 When to use
 - Create a worktree for any task that:
@@ -44,13 +45,13 @@ git add .
 git commit -m "feat(api): short subject"
 ```
 
-Push & open a PR
+Push & open a PR (update task docs in-branch)
 ```
 git push -u origin task/TASK-API-001-short-desc
 # create PR with gh or via web UI
-gh pr create --fill --base BASE --head task/TASK-API-001-short-desc
+gh pr create --base BASE --head task/TASK-API-001-short-desc --title "<TASK-ID>: short title" --body "Include TASK-ID, links to TASK file and TASK-INDEX.md, and PRD/REQ footers."
 ```
-Include the TASK-ID in the PR title/body and link to `docs/tasks/TASK-INDEX.md`.
+Before creating the PR, ensure any edits to the task frontmatter `status` and to `docs/tasks/TASK-INDEX.md` are made in this branch so they are part of the PR (e.g., set `status: in-progress` when starting; update to `status: done` in the same branch/PR). Do not edit these files directly on main.
 
 Cleanup (after merge or abandon)
 From repo root:
@@ -67,9 +68,11 @@ Batch-creating worktrees for a milestone leads to many stale worktrees, unnecess
 
 Quick checklist
 - [ ] Create `task/<TASK-ID>-...` branch and `.worktrees/<TASK-ID>` worktree
+- [ ] Update the task file frontmatter `status` (e.g., to `in-progress`) and the TASK-INDEX row in this branch — do not edit these on main
 - [ ] Run tests for the affected components (see app/package-specific test commands)
-- [ ] Push and open PR; link TASK-ID and any PRD/REQ footers
-- [ ] After merge, remove the worktree and delete the branch remotely
+- [ ] Push and open PR; include TASK-ID, link to the task file and TASK-INDEX, and include PRD/REQ footers as needed
+- [ ] After the PR is merged, close the related GitHub issue (if linked) and confirm `status: done` is on main
+- [ ] Remove the worktree and delete the branch remotely
 
 See also
 - `docs/tasks/TASK-INDEX.md`
