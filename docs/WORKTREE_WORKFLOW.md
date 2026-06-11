@@ -12,8 +12,8 @@ When to use
 - For tiny edits (typos, single-file docs tweaks) use an existing branch or the main working tree.
 
 Naming
-- Branch: `task/<TASK-ID>-short-description`
-  Example: `task/TASK-API-001-add-auth-handler`
+- Branch: `<type>/<TASK-ID>-short-description` where `<type>` is one of `feat`, `fix`, `chore`, `docs`, `devops`, `test`, etc.
+  Example: `docs/TASK-API-001-mark-done` or `feat/TASK-API-002-add-auth-handler`
 - Worktree path: `.worktrees/<TASK-ID>` (or `.worktrees/TASK-API-001`)
   Example: `.worktrees/TASK-API-001`
 
