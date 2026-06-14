@@ -101,6 +101,17 @@
 
 ---
 
+## Infrastructure (INFRA)
+
+> Cross-cutting infra tasks: Docker, CI, tooling
+
+| Task | Title | PRD Ref | Priority | Size | Status | GH |
+|:---|:---|:---|:---:|:---:|:---:|:---:|
+| [TASK-INFRA-001](./infra/TASK-INFRA-001-docker-compose.md) | Docker Compose for local development | — | 🔴 | M | 📋 | #2 |
+| [TASK-INFRA-002](./infra/TASK-INFRA-002-seed-scripts.md) | Seed scripts for test data | — | 🔴 | M | 📋 | #3 |
+| [TASK-INFRA-003](./infra/TASK-INFRA-003-moon-config.md) | Moon task runner configuration | — | 🔴 | S | 📋 | #4 |
+| [TASK-INFRA-004](./infra/TASK-INFRA-004-git-hooks.md) | Git hooks for lint, format, and vet | — | 🔴 | S | 📋 | #5 |
+
 ## How to Add a New Task
 
 1. Pick the domain code + next available number for that domain.
