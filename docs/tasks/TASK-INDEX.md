@@ -51,7 +51,7 @@
 | [TASK-API-001](./api/TASK-API-001-project-scaffold.md) | Go project scaffold & Chi router | — | 🔴 | M | ✅ | — |
 | [TASK-API-002](./api/TASK-API-002-postgres-schema-auth.md) | PostgreSQL schema: accounts, sessions, OTP, audit | REQ-BG-001 | 🔴 | M | ✅ | — |
 | [TASK-API-003](./api/TASK-API-003-jwt-auth-endpoints.md) | JWT auth endpoints (login, refresh, logout) | REQ-BG-004 | 🔴 | L | ✅ | — |
-| [TASK-API-004](./api/TASK-API-004-otp-verification.md) | OTP issuance & verification endpoint | REQ-BG-006 | 🔴 | M | 📋 | — |
+| [TASK-API-004](./api/TASK-API-004-otp-verification.md) | OTP issuance & verification endpoint | REQ-BG-006 | 🔴 | M | ✅ | — |
 | [TASK-API-005](./api/TASK-API-005-account-state-machine.md) | Account status state machine middleware | REQ-BG-005 | 🔴 | M | 📋 | — |
 | [TASK-PKG-001](./pkg/TASK-PKG-001-domain-entities-auth.md) | `domain` entities: Account, Role, Session, AuthToken | — | 🔴 | S | 📋 | — |
 | [TASK-PKG-002](./pkg/TASK-PKG-002-core-auth-package.md) | `core_auth`: token storage, refresh timer, offline PIN | REQ-BG-004 | 🔴 | XL | 📋 | — |
