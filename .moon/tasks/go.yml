@@ -1,0 +1,46 @@
+# https://moonrepo.dev/docs/config/tasks
+# yaml-language-server: $schema=https://moonrepo.dev/schemas/tasks.json
+$schema: "https://moonrepo.dev/schemas/tasks.json"
+
+# Inherited by all projects whose moon.yml sets: language: go
+
+inheritedBy:
+  language: go
+
+tasks:
+  # Download Go module dependencies
+  get:
+    command: go mod download
+    toolchain: system
+    inputs:
+      - "go.mod"
+      - "go.sum"
+
+  # Static analysis
+  lint:
+    command: go vet ./...
+    toolchain: system
+    deps:
+      - "~:get"
+    inputs:
+      - "**/*.go"
+
+  # Run tests
+  test:
+    command: go test ./...
+    toolchain: system
+    deps:
+      - "~:get"
+    inputs:
+      - "**/*.go"
+    options:
+      envFile: ".env"
+
+  # Build the server binary
+  build:
+    command: go build -o /dev/null ./cmd/server
+    toolchain: system
+    deps:
+      - "~:get"
+    inputs:
+      - "**/*.go"

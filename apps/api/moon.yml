@@ -1,0 +1,26 @@
+# https://moonrepo.dev/docs/config/project
+# yaml-language-server: $schema=https://moonrepo.dev/schemas/project.json
+$schema: "https://moonrepo.dev/schemas/project.json"
+
+language: go
+
+tasks:
+  # Run the API server in development mode
+  run:
+    command: go run ./cmd/server
+    toolchain: system
+    options:
+      envFile: ".env"
+      outputStyle: stream
+      cache: false
+
+  # Build the production binary into local dist/
+  build-prod:
+    command: go build -ldflags="-s -w" -o dist/api ./cmd/server
+    toolchain: system
+    deps:
+      - "~:get"
+    inputs:
+      - "**/*.go"
+    outputs:
+      - "dist/api"
