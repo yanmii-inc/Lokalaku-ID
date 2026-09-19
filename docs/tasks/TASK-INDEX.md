@@ -48,9 +48,9 @@
 
 | Task | Title | PRD Ref | Priority | Size | Status | GH |
 |:---|:---|:---|:---:|:---:|:---:|:---:|
-| [TASK-API-001](./api/TASK-API-001-project-scaffold.md) | Go project scaffold & Chi router | — | 🔴 | M | 📋 | — |
-| [TASK-API-002](./api/TASK-API-002-postgres-schema-auth.md) | PostgreSQL schema: accounts, sessions, OTP, audit | REQ-BG-001 | 🔴 | M | 📋 | — |
-| [TASK-API-003](./api/TASK-API-003-jwt-auth-endpoints.md) | JWT auth endpoints (login, refresh, logout) | REQ-BG-004 | 🔴 | L | 📋 | — |
+| [TASK-API-001](./api/TASK-API-001-project-scaffold.md) | Go project scaffold & Chi router | — | 🔴 | M | ✅ | — |
+| [TASK-API-002](./api/TASK-API-002-postgres-schema-auth.md) | PostgreSQL schema: accounts, sessions, OTP, audit | REQ-BG-001 | 🔴 | M | ✅ | — |
+| [TASK-API-003](./api/TASK-API-003-jwt-auth-endpoints.md) | JWT auth endpoints (login, refresh, logout) | REQ-BG-004 | 🔴 | L | ✅ | — |
 | [TASK-API-004](./api/TASK-API-004-otp-verification.md) | OTP issuance & verification endpoint | REQ-BG-006 | 🔴 | M | 📋 | — |
 | [TASK-API-005](./api/TASK-API-005-account-state-machine.md) | Account status state machine middleware | REQ-BG-005 | 🔴 | M | 📋 | — |
 | [TASK-PKG-001](./pkg/TASK-PKG-001-domain-entities-auth.md) | `domain` entities: Account, Role, Session, AuthToken | — | 🔴 | S | 📋 | — |
@@ -107,9 +107,9 @@
 
 | Task | Title | PRD Ref | Priority | Size | Status | GH |
 |:---|:---|:---|:---:|:---:|:---:|:---:|
-| [TASK-INFRA-001](./infra/TASK-INFRA-001-docker-compose.md) | Docker Compose for local development | — | 🔴 | M | 📋 | #2 |
-| [TASK-INFRA-002](./infra/TASK-INFRA-002-seed-scripts.md) | Seed scripts for test data | — | 🔴 | M | 📋 | #3 |
-| [TASK-INFRA-003](./infra/TASK-INFRA-003-moon-config.md) | Moon task runner configuration | — | 🔴 | S | 📋 | #4 |
+| [TASK-INFRA-001](./infra/TASK-INFRA-001-docker-compose.md) | Docker Compose for local development | — | 🔴 | M | ✅ | #2 |
+| [TASK-INFRA-002](./infra/TASK-INFRA-002-seed-scripts.md) | Seed scripts for test data | — | 🔴 | M | ✅ | #3 |
+| [TASK-INFRA-003](./infra/TASK-INFRA-003-moon-config.md) | Moon task runner configuration | — | 🔴 | S | ✅ | #4 |
 | [TASK-INFRA-004](./infra/TASK-INFRA-004-git-hooks.md) | Git hooks for lint, format, and vet | — | 🔴 | S | 📋 | #5 |
 
 ## How to Add a New Task

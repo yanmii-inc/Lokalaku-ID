@@ -4,7 +4,7 @@ title: "Moon task runner configuration"
 milestone: INFRA
 prd_ref: "—"
 app: infra
-status: todo
+status: done
 priority: high
 complexity: S
 github_issue: 4
@@ -33,9 +33,9 @@ The repository uses Moon for Dart/Flutter orchestration. Centralized `moon` task
 
 ## Acceptance Criteria
 
-- [ ] `moon` workspace has tasks for `:get`, `:lint`, `:test`, and per-package `build-runner` where applicable
-- [ ] README documents common `moon` commands and how to run them locally
-- [ ] CI workflows can call the new `moon` tasks
+- [x] `moon` workspace has tasks for `:get`, `:lint`, `:test`, and per-package `build-runner` where applicable
+- [x] README documents common `moon` commands and how to run them locally
+- [x] CI workflows can call the new `moon` tasks
 
 ---
 
@@ -54,7 +54,7 @@ The repository uses Moon for Dart/Flutter orchestration. Centralized `moon` task
 
 ## Definition of Done
 
-- [ ] `moon` tasks created and documented
-- [ ] CI uses `moon` tasks in at least one pipeline job
-- [ ] `TASK-INDEX.md` status updated to `done`
+- [x] `moon` tasks created and documented
+- [x] CI uses `moon` tasks in at least one pipeline job
+- [x] `TASK-INDEX.md` status updated to `done`
 - [ ] GitHub issue closed

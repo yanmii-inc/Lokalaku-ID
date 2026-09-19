@@ -63,27 +63,91 @@ pnpm compose:up             # PostgreSQL + Mailpit + Jaeger
 
 | Service | URL / Port |
 |:---|:---|
+| API Server | `http://localhost:8080` |
 | PostgreSQL | `localhost:5432` |
-| Mailpit | `http://localhost:8025` |
-| Jaeger | `http://localhost:16686` |
+| Redis | `localhost:6379` |
+| Mailpit UI | `http://localhost:8025` |
+
+### Local Development Infrastructure (Docker Compose)
+
+Copy `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
+
+Manage the local stack:
+```bash
+# Start all dev services (API, PostgreSQL, Redis, Mailpit)
+docker compose -f docker-compose.dev.yml up -d --build
+
+# View logs
+docker compose -f docker-compose.dev.yml logs -f
+
+# Stop services
+docker compose -f docker-compose.dev.yml down
+
+# Reset environment and wipe database volumes
+docker compose -f docker-compose.dev.yml down -v
+
+# Run database migrations and seed test data manually
+./scripts/seed.sh
+```
+
+### Seed Test Accounts (Password for all: `Password123!`)
+
+| Role | Phone | Email | Cluster |
+|:---|:---|:---|:---|
+| **Superadmin** | `+6281111111111` | `admin@lokalaku.id` | *(Global / None)* |
+| **Backoffice Admin** | `+6281666666666` | `admin.sukamaju@lokalaku.id` | Desa Sukamaju (`sukamaju-001`) |
+| **Merchant** | `+6281222222222` | `warung.budi@lokalaku.id` | Desa Sukamaju (`sukamaju-001`) |
+| **Wholesaler** | `+6281333333333` | `grosir.jaya@lokalaku.id` | *(Global / None)* |
+| **Courier** | `+6281444444444` | `kurir.agus@lokalaku.id` | *(Global / None)* |
+| **Consumer** | `+6281555555555` | `warga.siti@lokalaku.id` | *(Global / None)* |
 
 ```bash
-cd apps/api && go run ./cmd/server            # Run API
+cd apps/api && go run ./cmd/server            # Run API locally
 cd apps/merchant_app && flutter run            # Run Flutter app
 cd apps/website && pnpm dev                     # Run website
 ```
 
 ## Commands
 
+### Common Moon tasks (run from repo root)
+
 | Command | Action |
 |:---|:---|
-| `moon run :test` | Run all tests |
-| `moon run :lint` | Lint everything |
+| `moon run :get` | Install all Dart/Flutter dependencies |
+| `moon run :lint` | Lint all projects (Dart: `flutter analyze`, Go: `go vet`) |
+| `moon run :test` | Test all projects |
+| `moon run :build` | Build all projects |
+
+### Go API tasks
+
+| Command | Action |
+|:---|:---|
+| `moon run api:get` | Download Go module dependencies |
+| `moon run api:lint` | Run `go vet ./...` on the API |
+| `moon run api:test` | Run `go test ./...` on the API |
+| `moon run api:build` | Compile the API server binary (dry-run to `/dev/null`) |
+| `moon run api:run` | Start the API server in development mode |
+
+### Flutter package tasks
+
+| Command | Action |
+|:---|:---|
+| `moon run domain:build-runner` | Codegen: freezed + json_serializable (domain) |
+| `moon run data:build-runner` | Codegen: json_serializable (data) |
+| `moon project <name>` | Inspect a package's task graph |
+
+### Docker Compose
+
+| Command | Action |
+|:---|:---|
+| `docker compose -f docker-compose.dev.yml up -d` | Start dev stack (API, Postgres, Redis, Mailpit) |
+| `docker compose -f docker-compose.dev.yml logs -f` | Follow service logs |
+| `docker compose -f docker-compose.dev.yml down` | Stop Docker dev services |
+| `docker compose -f docker-compose.dev.yml down -v` | Stop + wipe dev volumes |
 | `pnpm typecheck` | Typecheck website (JS/TS) |
-| `moon run domain:build-runner` | Codegen (domain) |
-| `moon run data:build-runner` | Codegen (data) |
-| `pnpm compose:down` | Stop Docker services |
-| `pnpm compose:cleanup` | Stop + wipe volumes |
 
 ---
 

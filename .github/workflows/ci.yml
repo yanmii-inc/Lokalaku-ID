@@ -1,0 +1,94 @@
+# CI — Moon-orchestrated lint & test gate
+# Runs on every pull request targeting main and on direct pushes.
+# Each job delegates to Moon so task caching, dependency ordering,
+# and toolchain pinning are handled consistently with local dev.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # Go API — vet + test
+  # ──────────────────────────────────────────────────────────────
+  api-lint-test:
+    name: "API — lint & test"
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: lokalaku
+          POSTGRES_PASSWORD: lokalaku
+          POSTGRES_DB: lokalaku_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # Minimal env so tests that load config don't crash
+      DB_HOST: localhost
+      DB_PORT: "5432"
+      DB_USER: lokalaku
+      DB_PASSWORD: lokalaku
+      DB_NAME: lokalaku_dev
+      PORT: "8080"
+      ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+
+      - name: Install Moon
+        uses: moonrepo/setup-moon-action@v2
+
+      - name: Lint (go vet)
+        run: moon run api:lint
+
+      - name: Test
+        run: moon run api:test
+
+  # ──────────────────────────────────────────────────────────────
+  # Dart / Flutter packages — lint + test
+  # ──────────────────────────────────────────────────────────────
+  dart-lint-test:
+    name: "Dart packages — lint & test"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.x"
+          channel: stable
+
+      - name: Install Moon
+        uses: moonrepo/setup-moon-action@v2
+
+      - name: Install Dart dependencies
+        run: moon run :get
+
+      - name: Lint all Dart packages
+        run: moon run :lint
+
+      - name: Test all Dart packages
+        run: moon run :test

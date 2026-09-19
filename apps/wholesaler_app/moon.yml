@@ -1,0 +1,31 @@
+# https://moonrepo.dev/docs/config/project
+# yaml-language-server: $schema=https://moonrepo.dev/schemas/project.json
+$schema: "https://moonrepo.dev/schemas/project.json"
+
+language: dart
+
+tasks:
+  build:
+    command: flutter build linux --release
+    toolchain: system
+    deps:
+      - "~:get"
+    inputs:
+      - "lib/**/*.dart"
+      - "pubspec.yaml"
+
+  build-web:
+    command: flutter build web --release
+    toolchain: system
+    deps:
+      - "~:get"
+    inputs:
+      - "lib/**/*.dart"
+      - "pubspec.yaml"
+
+  run:
+    command: flutter run -d linux
+    toolchain: system
+    options:
+      cache: false
+      outputStyle: stream
