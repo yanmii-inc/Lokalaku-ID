@@ -1,0 +1,44 @@
+#!/bin/sh
+# pre-push hook — runs slightly heavier checks before pushing.
+# These catch issues that are too slow for pre-commit but still
+# much faster than waiting for CI.
+#
+# What runs:
+#   1. go test ./... on apps/api (only if Go files changed vs remote)
+#
+# To bypass: git push --no-verify
+
+REMOTE=$1
+URL=$2
+
+# Determine the local branch being pushed
+LOCAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+echo "🚀 pre-push: checking apps/api tests before push to $REMOTE…"
+
+# Check if any Go files differ between local HEAD and remote tracking branch
+REMOTE_REF="refs/remotes/${REMOTE}/${LOCAL_BRANCH}"
+if git rev-parse --verify "$REMOTE_REF" >/dev/null 2>&1; then
+  GO_CHANGED=$(git diff --name-only "$(git merge-base HEAD "$REMOTE_REF")" HEAD | grep -c '^apps/api/.*\.go$' || true)
+else
+  # No remote tracking branch yet (first push) — run tests unconditionally
+  GO_CHANGED=1
+fi
+
+if [ "$GO_CHANGED" -gt 0 ]; then
+  echo "  → Go files changed, running go test ./... in apps/api"
+  (cd apps/api && go test ./...) || {
+    echo ""
+    echo "┌─────────────────────────────────────────────────────────────────┐"
+    echo "│  LOKALAKU: go test failed — push blocked                         │"
+    echo "└─────────────────────────────────────────────────────────────────┘"
+    echo ""
+    echo "  Fix the failing tests before pushing, or bypass with:"
+    echo "    git push --no-verify"
+    echo ""
+    exit 1
+  }
+  echo "  ✓ All Go tests pass."
+else
+  echo "  → No Go changes detected, skipping go test."
+fi

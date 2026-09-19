@@ -4,7 +4,7 @@ title: "Git hooks for lint, format, and vet"
 milestone: INFRA
 prd_ref: "—"
 app: infra
-status: todo
+status: done
 priority: high
 complexity: S
 github_issue: 5
@@ -33,9 +33,9 @@ Automated hooks reduce CI cycle time by preventing easily-detected problems from
 
 ## Acceptance Criteria
 
-- [ ] Pre-commit hook runs formatters (dart/flutter format, prettier where applicable)
-- [ ] Pre-push or pre-commit runs lint and `go vet` for Go code
-- [ ] Hook installation documented (`npm install`/`pnpm install` step or `husky install`)
+- [x] Pre-commit hook runs formatters (dart/flutter format, prettier where applicable)
+- [x] Pre-push or pre-commit runs lint and `go vet` for Go code
+- [x] Hook installation documented (`npm install`/`pnpm install` step or `husky install`)
 
 ---
 
@@ -54,7 +54,7 @@ Automated hooks reduce CI cycle time by preventing easily-detected problems from
 
 ## Definition of Done
 
-- [ ] Hooks added and documented
-- [ ] CI remains authoritative for final checks
-- [ ] `TASK-INDEX.md` status updated to `done`
+- [x] Hooks added and documented
+- [x] CI remains authoritative for final checks
+- [x] `TASK-INDEX.md` status updated to `done`
 - [ ] GitHub issue closed

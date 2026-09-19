@@ -1,0 +1,43 @@
+#!/bin/sh
+# pre-commit hook — runs fast local checks on staged files.
+# Keep this hook quick. CI is the authoritative gate.
+#
+# What runs:
+#   1. Dart/Flutter format (dart format) on staged .dart files
+#   2. Biome format+lint on staged JS/TS/JSON files
+#   3. go vet on apps/api if any Go files are staged
+#
+# To bypass in an emergency: git commit --no-verify
+
+# ── helpers ───────────────────────────────────────────────────────────────────
+has_staged() {
+  git diff --cached --name-only | grep -qE "$1"
+}
+
+# ── 1. Dart format (affected .dart files only) ────────────────────────────────
+if has_staged '\.dart$'; then
+  DART_FILES=$(git diff --cached --name-only | grep '\.dart$')
+  echo "🎯 pre-commit: formatting staged Dart files…"
+  # Prefer puro-managed Flutter if available, fall back to system dart/flutter
+  if command -v puro >/dev/null 2>&1; then
+    printf '%s\n' "$DART_FILES" | xargs puro dart format --line-length 100
+  elif command -v dart >/dev/null 2>&1; then
+    printf '%s\n' "$DART_FILES" | xargs dart format --line-length 100
+  fi
+  # Re-stage formatted files
+  printf '%s\n' "$DART_FILES" | xargs git add
+fi
+
+# ── 2. Biome format + lint (JS / TS / JSON) ──────────────────────────────────
+if has_staged '\.\(js\|jsx\|ts\|tsx\|json\|jsonc\)$'; then
+  echo "🎨 pre-commit: running Biome on staged JS/TS/JSON files…"
+  BIOME_FILES=$(git diff --cached --name-only | grep -E '\.(js|jsx|ts|tsx|json|jsonc)$')
+  printf '%s\n' "$BIOME_FILES" | xargs pnpm exec biome check --write --no-errors-on-unmatched
+  printf '%s\n' "$BIOME_FILES" | xargs git add
+fi
+
+# ── 3. go vet (apps/api) ──────────────────────────────────────────────────────
+if has_staged '^apps/api/.*\.go$'; then
+  echo "🐹 pre-commit: running go vet on apps/api…"
+  (cd apps/api && go vet ./...)
+fi
