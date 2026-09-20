@@ -143,3 +143,11 @@ TODO.md
 
 # Expo
 .expo
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
+
+# Local AI assistant & RTK cache
+.rtk/
+.gemini/
+.claude/

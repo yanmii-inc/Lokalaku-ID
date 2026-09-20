@@ -51,10 +51,10 @@ fi
 STAGED_CODE=$(git diff --cached --name-only \
   | grep -E '^(apps|packages)/' \
   | grep -E '\.(go|dart|ts|tsx|js|jsx)$' \
-  | grep -vE '(_test\.(go|dart)|\.test\.(ts|js)|\.spec\.(ts|js))$')
+  | grep -vE '(_test\.(go|dart)|\.test\.(ts|js)|\.spec\.(ts|js))$' || true)
 
 STAGED_TESTS=$(git diff --cached --name-only \
-  | grep -E '(_test\.(go|dart)|\.test\.(ts|js)|\.spec\.(ts|js))$')
+  | grep -E '(_test\.(go|dart)|\.test\.(ts|js)|\.spec\.(ts|js))$' || true)
 
 if [ -n "$STAGED_CODE" ] && [ -z "$STAGED_TESTS" ]; then
   case "$TYPE" in
