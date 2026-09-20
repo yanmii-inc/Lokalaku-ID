@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS audit_events;
+DROP TABLE IF EXISTS otp_codes;
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS accounts;
+DROP TABLE IF EXISTS village_clusters;

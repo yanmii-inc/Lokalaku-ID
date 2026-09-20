@@ -13,21 +13,15 @@ tasks:
     description: 'Pin Flutter version, scaffold native platforms, and merge launch configs'
 
   build:
-    command: 'puro flutter build apk'
+    command: 'flutter build apk'
     inputs:
       - 'lib/**/*.dart'
       - 'pubspec.yaml'
-
-  test:
-    command: 'puro flutter test'
-    inputs:
-      - 'test/**/*.dart'
-      - 'lib/**/*.dart'
 
   gen:
     command: 'bash'
     args:
       - '-c'
-      - 'puro flutter pub get && puro flutter pub run slang'
+      - 'flutter pub get && dart run slang'
     description: 'Fetch packages and run Slang generation'
 

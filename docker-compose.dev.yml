@@ -1,0 +1,87 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+
+name: lokalaku-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lokalaku_postgres_dev
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lokalaku}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lokalaku_dev_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-lokalaku}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./apps/api/migrations/000001_create_auth_tables.up.sql:/docker-entrypoint-initdb.d/01_create_auth_tables.sql:ro
+      - ./scripts/seed_dev.sql:/docker-entrypoint-initdb.d/02_seed_dev.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lokalaku} -d ${POSTGRES_DB:-lokalaku}"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: lokalaku_redis_dev
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-lokalaku_dev_redis}"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a '${REDIS_PASSWORD:-lokalaku_dev_redis}' ping | grep -q PONG"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: lokalaku_mailpit_dev
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
+      - "127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025"
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: lokalaku_api_dev
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${PORT:-8080}:8080"
+    environment:
+      PORT: "8080"
+      ENV: ${ENV:-development}
+      SHUTDOWN_TIMEOUT_SECONDS: ${SHUTDOWN_TIMEOUT_SECONDS:-10}
+      POSTGRES_USER: ${POSTGRES_USER:-lokalaku}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lokalaku_dev_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-lokalaku}
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-lokalaku_dev_redis}
+      JWT_SECRET: ${JWT_SECRET:-lokalaku_dev_jwt_secret_32bytes_long_key!!}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: lokalaku_tunnel_dev
+    restart: unless-stopped
+    profiles: ["tunnel"]
+    command: tunnel --no-autoupdate --url http://api:8080
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

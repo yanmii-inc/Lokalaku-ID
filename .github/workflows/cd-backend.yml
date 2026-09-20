@@ -1,0 +1,197 @@
+# CD — Backend API container build, GHCR push, migration check, and VPS deployment
+# Triggers on PR merge / push to main when apps/api or production infra changes.
+name: cd-backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'docker-compose.prod.yml'
+      - 'scripts/run_migrations.sh'
+      - '.github/workflows/cd-backend.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/api
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # 1. Verify Database Migrations in Ephemeral Runner
+  # ──────────────────────────────────────────────────────────────
+  test-migrations:
+    name: "Verify DB Migrations"
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: lokalaku
+          POSTGRES_PASSWORD: lokalaku_test_pass
+          POSTGRES_DB: lokalaku_migration_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run migrations against test Postgres
+        env:
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          DB_USER: lokalaku
+          DB_PASSWORD: lokalaku_test_pass
+          DB_NAME: lokalaku_migration_test
+          DB_SSLMODE: disable
+        run: |
+          chmod +x scripts/run_migrations.sh
+          ./scripts/run_migrations.sh up
+
+  # ──────────────────────────────────────────────────────────────
+  # 2. Build Minimal Distroless Docker Image & Push to GHCR
+  # ──────────────────────────────────────────────────────────────
+  build-and-push:
+    name: "Build & Push Docker Image"
+    runs-on: ubuntu-latest
+    needs: [test-migrations]
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=short,prefix=sha-
+            type=ref,event=branch
+
+      - name: Build and push API Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./apps/api
+          file: ./apps/api/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ──────────────────────────────────────────────────────────────
+  # 3. Deploy to Target VPS (Conditional on secrets.VPS_HOST)
+  # ──────────────────────────────────────────────────────────────
+  deploy:
+    name: "Deploy to Host VPS"
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      DEPLOY_DIR: ${{ secrets.VPS_DEPLOY_DIR || '/opt/lokalaku' }}
+    steps:
+      - name: Check VPS configuration status
+        id: check_vps
+        run: |
+          if [ -z "${VPS_HOST}" ] || [ -z "${VPS_SSH_KEY}" ]; then
+            echo "has_vps=false" >> "$GITHUB_OUTPUT"
+            echo "ℹ️  VPS_HOST or VPS_SSH_KEY not configured in GitHub Secrets."
+            echo "ℹ️  Skipping remote VPS deployment. Production Docker image successfully pushed to GHCR."
+            echo "ℹ️  Pre-VPS Option 1: You can expose your local container via: docker compose --profile tunnel up"
+          else
+            echo "has_vps=true" >> "$GITHUB_OUTPUT"
+            echo "✅ VPS configuration detected. Proceeding with deployment."
+          fi
+
+      - name: Checkout repository
+        if: steps.check_vps.outputs.has_vps == 'true'
+        uses: actions/checkout@v4
+
+      - name: Configure SSH Key
+        if: steps.check_vps.outputs.has_vps == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${VPS_SSH_KEY}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H -p "${{ secrets.VPS_SSH_PORT || 22 }}" "${VPS_HOST}" >> ~/.ssh/known_hosts
+
+      - name: Sync deployment manifests and migrations to host
+        if: steps.check_vps.outputs.has_vps == 'true'
+        run: |
+          SSH_PORT="${{ secrets.VPS_SSH_PORT || 22 }}"
+          ssh -p "${SSH_PORT}" "${VPS_USER}@${VPS_HOST}" "mkdir -p ${DEPLOY_DIR}/apps/api/migrations"
+          scp -P "${SSH_PORT}" docker-compose.prod.yml "${VPS_USER}@${VPS_HOST}:${DEPLOY_DIR}/docker-compose.prod.yml"
+          scp -P "${SSH_PORT}" apps/api/migrations/*.sql "${VPS_USER}@${VPS_HOST}:${DEPLOY_DIR}/apps/api/migrations/"
+
+      - name: Execute remote deployment & healthcheck
+        if: steps.check_vps.outputs.has_vps == 'true'
+        env:
+          GHCR_PAT: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+          SHORT_SHA: ${{ github.sha }}
+        run: |
+          SSH_PORT="${{ secrets.VPS_SSH_PORT || 22 }}"
+          ssh -p "${SSH_PORT}" "${VPS_USER}@${VPS_HOST}" << 'ENDSSH'
+            set -euo pipefail
+            cd ${DEPLOY_DIR}
+
+            echo "🔑 Logging in to GHCR..."
+            echo "${GHCR_PAT}" | docker login ghcr.io -u "${ACTOR}" --password-stdin
+
+            echo "📦 Pulling latest API image..."
+            IMAGE_TAG="sha-${SHORT_SHA:0:7}" docker compose -f docker-compose.prod.yml pull api
+
+            echo "🔄 Applying pending database migrations..."
+            # Execute migrations container on the internal network before API reload
+            docker run --rm \
+              --network=lokalaku-prod_internal \
+              -v "$(pwd)/apps/api/migrations:/migrations:ro" \
+              migrate/migrate:v4.17.0 \
+              -path=/migrations \
+              -database "postgres://${POSTGRES_USER:-lokalaku}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lokalaku_prod}?sslmode=disable" \
+              up
+
+            echo "🚀 Recreating API container..."
+            IMAGE_TAG="sha-${SHORT_SHA:0:7}" docker compose -f docker-compose.prod.yml up -d --remove-orphans api
+
+            echo "🩺 Verifying API healthcheck..."
+            HEALTH_URL="http://127.0.0.1:${PORT:-8080}/healthz"
+            for i in $(seq 1 12); do
+              if curl -sf "${HEALTH_URL}" > /dev/null; then
+                echo "✅ API healthy and serving traffic!"
+                exit 0
+              fi
+              echo "Waiting for API to be healthy... ($i/12)"
+              sleep 3
+            done
+
+            echo "❌ API healthcheck timed out!" >&2
+            exit 1
+          ENDSSH

@@ -1,10 +1,16 @@
 /// Lokalaku core auth layer.
 ///
-/// Handles login, logout, session persistence, and transparent
-/// JWT access-token refresh using a secure on-device store.
+/// Handles login, logout, session persistence, proactive JWT access-token refresh,
+/// and offline PIN grace sessions for business continuity during network outages.
 library lokalaku_core_auth;
 
-// TODO: export 'src/auth_service.dart';
-// TODO: export 'src/token_storage.dart';
-// TODO: export 'src/models/auth_token.dart';
-// TODO: export 'src/models/login_request.dart';
+// Client & Services
+export 'src/auth_client.dart';
+export 'src/auth_service.dart';
+export 'src/refresh_token_timer.dart';
+export 'src/token_storage.dart';
+
+// Models
+export 'src/models/auth_state.dart';
+export 'src/models/login_request.dart';
+export 'src/models/pin_result.dart';

@@ -1,0 +1,35 @@
+# https://moonrepo.dev/docs/config/project
+# yaml-language-server: $schema=https://moonrepo.dev/schemas/project.json
+$schema: "https://moonrepo.dev/schemas/project.json"
+
+language: dart
+
+tasks:
+  # --- Stub guards: no-ops until the Flutter project is scaffolded ---
+  get:
+    command: noop
+    toolchain: system
+
+  lint:
+    command: noop
+    toolchain: system
+
+  test:
+    command: noop
+    toolchain: system
+  # -----------------------------------------------------------------
+  build:
+    command: flutter build web --release
+    toolchain: system
+    deps:
+      - "~:get"
+    inputs:
+      - "lib/**/*.dart"
+      - "pubspec.yaml"
+
+  run:
+    command: flutter run -d chrome
+    toolchain: system
+    options:
+      cache: false
+      outputStyle: stream

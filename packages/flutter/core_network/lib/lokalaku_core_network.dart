@@ -4,8 +4,11 @@
 /// and retry logic. Pure Dart — no Flutter SDK dependency.
 library lokalaku_core_network;
 
-// TODO: export 'src/api_client.dart';
-// TODO: export 'src/interceptors/auth_interceptor.dart';
-// TODO: export 'src/interceptors/retry_interceptor.dart';
-// TODO: export 'src/models/api_error.dart';
-// TODO: export 'src/models/api_response.dart';
+// HTTP Client & Interceptors
+export 'src/api_client.dart';
+export 'src/interceptors/auth_interceptor.dart';
+export 'src/interceptors/retry_interceptor.dart';
+
+// Models
+export 'src/models/api_error.dart';
+export 'src/models/api_response.dart';

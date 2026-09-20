@@ -231,11 +231,36 @@ Always follow the Conventional Commits format with Lokalaku-specific scopes.
 
 **Add a body when:** the subject alone doesn't explain why the change was made, there is a non-obvious tradeoff, or a migration step is required.
 
-**Footer trailers to include when applicable:**
-- `Implements: REQ-XX-NNN` — if the commit satisfies a PRD requirement
-- `See: ADR-NNN` — if an architecture decision record is relevant
-- `Closes: #NNN` — if a GitHub issue is resolved
-- `BREAKING CHANGE: <description>` — if a public contract changes
+---
+
+### ⛔ MANDATORY RULES — CI will reject commits that violate these
+
+**Rule 1 — Scope is never optional.**
+Every commit MUST include a scope. `feat: add X` is invalid.
+Always write `feat(<scope>): add X`. Pick the scope from the valid
+scopes table above. If a commit spans two scopes, use the primary one
+and mention the secondary in the body.
+
+**Rule 2 — Behavioral commits need a traceability footer.**
+Commits with type `feat`, `fix`, or `perf` MUST include at least one
+of the following footers (CI enforces this via `check-commit-footers.sh`):
+
+| Footer | When |
+|:---|:---|
+| `Implements: REQ-XX-NNN` | Commit satisfies a PRD requirement |
+| `See: ADR-NNN` | Relevant architecture decision |
+| `Closes: #NNN` | Resolves a GitHub issue |
+| `Refs: #NNN` | Related to a GitHub issue (not closing) |
+
+All other types (`docs`, `refactor`, `test`, `chore`, `ci`, `style`,
+`revert`) are **exempt** from the footer requirement.
+
+**Rule 3 — Line length.**
+- Subject line: ≤ 72 characters (enforced by commitlint `header-max-length`)
+- Body lines: ≤ 72 characters each (enforced by `body-max-line-length`)
+- Footer lines: ≤ 72 characters each (enforced by `footer-leading-blank`)
+
+---
 
 **Output:** Return only the raw commit message text. No markdown fences, no explanation, no commentary.
 
