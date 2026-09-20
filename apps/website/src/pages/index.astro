@@ -1,0 +1,135 @@
+---
+const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:8080';
+const siteTitle = "Lokalaku — Direktori & Pasar Komunitas Desa";
+const siteDescription = "Platform ekonomi desa mandiri menghubungkan warung, petani, dan produsen lokal.";
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={siteDescription} />
+    <meta property="og:title" content={siteTitle} />
+    <meta property="og:description" content={siteDescription} />
+    <meta property="og:type" content="website" />
+    <title>{siteTitle}</title>
+    <style>
+      :root {
+        --color-primary: #15803d;
+        --color-primary-dark: #166534;
+        --color-bg: #f8fafc;
+        --color-card: #ffffff;
+        --color-text: #1e293b;
+        --color-muted: #64748b;
+      }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        line-height: 1.6;
+      }
+      header {
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        text-decoration: none;
+      }
+      main {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      .hero {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+      .hero h1 {
+        font-size: 2.25rem;
+        margin-bottom: 0.5rem;
+        color: #0f172a;
+      }
+      .hero p {
+        font-size: 1.125rem;
+        color: var(--color-muted);
+      }
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.5rem;
+      }
+      .card {
+        background: var(--color-card);
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+      .card h2 {
+        font-size: 1.25rem;
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        border-radius: 0.375rem;
+        background: #dcfce7;
+        color: #166534;
+        font-weight: 600;
+      }
+      footer {
+        text-align: center;
+        padding: 2rem;
+        color: var(--color-muted);
+        font-size: 0.875rem;
+        border-top: 1px solid #e2e8f0;
+        margin-top: 4rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="/" class="logo">Lokalaku</a>
+      <span class="badge" id="api-status" data-api-url={apiUrl}>API Ready</span>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>Pasar & Produk Komunitas Desa</h1>
+        <p>Temukan warung, kelompok tani, dan produsen terdekat di lingkungan desamu.</p>
+      </section>
+
+      <section class="card-grid">
+        <article class="card">
+          <h2>Beli Bersama (Pool Buying)</h2>
+          <p>Warung-warung lokal bergabung dalam pesanan grosir untuk mendapatkan harga pabrik langsung.</p>
+        </article>
+
+        <article class="card">
+          <h2>Belanja Dekat Rumah</h2>
+          <p>Dukung perputaran ekonomi lokal dengan berbelanja langsung dari warung tetangga.</p>
+        </article>
+
+        <article class="card">
+          <h2>Kurir Komunitas</h2>
+          <p>Pengiriman cepat oleh kurir lokal yang mengenal seluk-beluk desa.</p>
+        </article>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; {new Date().getFullYear()} Lokalaku Ecosystem. Open-source local economic network.</p>
+    </footer>
+  </body>
+</html>

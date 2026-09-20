@@ -139,8 +139,32 @@ openssl rand -hex 32
 
 ---
 
-## 5. Summary Checklist Before Running First CD
+## 5. Web Applications Deployment (Astro Website & Flutter Backoffice)
+
+Lokalaku compiles two web applications during the `cd-web` pipeline:
+1. **`apps/website` (Astro):** Public-facing static village directory and catalog served at root (`/`).
+2. **`apps/backoffice_web` (Flutter Web):** Operator dashboard served under `/backoffice/`.
+
+### Pre-VPS Staging: GitHub Pages
+GitHub Pages provides free static hosting with zero vendor lock-in for early testing:
+1. Go to your GitHub repository → **Settings** → **Pages**.
+2. Under **Build and deployment** → **Source**, select **GitHub Actions**.
+3. When `cd-web.yml` runs on push to `main`, it bundles both web apps and publishes them to `https://<organization>.github.io/<repo>/`.
+4. The web applications connect to your backend via the injected `API_BASE_URL` (Cloudflare Tunnel or VPS domain).
+
+### Production VPS: Static Web Root
+When `VPS_HOST` is configured, `cd-web.yml` also synchronizes compiled static bundles to the VPS:
+* Website: `${DEPLOY_DIR}/www/website`
+* Backoffice: `${DEPLOY_DIR}/www/backoffice`
+
+A lightweight Caddy or Nginx reverse proxy serves these directories with immutable 1-year caching for fingerprinted assets (`/_astro/*`, `/assets/*`) and immediate revalidation (`no-cache`) for entrypoint `index.html` files.
+
+---
+
+## 6. Summary Checklist Before Running First CD
 
 - [ ] `API_BASE_URL` secret added in GitHub (Cloudflare Tunnel or production URL).
+- [ ] GitHub Pages source set to **GitHub Actions** in repository settings (for web CD).
 - [ ] `ANDROID_KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` added for mobile builds.
-- [ ] (Optional) `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` added when a production host is ready. If omitted, the CD workflow will build and publish Docker images to GHCR and skip the VPS deploy step without error.
+- [ ] (Optional) `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` added when a production host is ready. If omitted, CD workflows publish Docker images to GHCR and web apps to GitHub Pages, gracefully skipping the VPS deploy step without error.
+

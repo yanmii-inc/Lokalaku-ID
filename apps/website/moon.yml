@@ -1,0 +1,38 @@
+# https://moonrepo.dev/docs/config/project
+# yaml-language-server: $schema=https://moonrepo.dev/schemas/project.json
+$schema: "https://moonrepo.dev/schemas/project.json"
+
+language: "javascript"
+stack: "frontend"
+
+tasks:
+  dev:
+    command: "pnpm exec astro dev"
+    options:
+      runInCI: false
+      cache: false
+
+  build:
+    command: "pnpm exec astro build"
+    inputs:
+      - "src/**/*"
+      - "public/**/*"
+      - "astro.config.mjs"
+      - "package.json"
+      - "tsconfig.json"
+    outputs:
+      - "dist"
+
+  lint:
+    command: "pnpm exec astro check"
+    inputs:
+      - "src/**/*"
+      - "astro.config.mjs"
+      - "package.json"
+      - "tsconfig.json"
+
+  preview:
+    command: "pnpm exec astro preview"
+    options:
+      runInCI: false
+      cache: false

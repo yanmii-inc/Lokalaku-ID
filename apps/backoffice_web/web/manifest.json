@@ -1,0 +1,9 @@
+{
+  "name": "Lokalaku Backoffice",
+  "short_name": "Backoffice",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#15803d",
+  "description": "Lokalaku Backoffice Web Dashboard for Platform Operators"
+}

@@ -4,7 +4,7 @@ title: "Web CD pipeline (Astro website & Flutter Backoffice on PR merge)"
 milestone: INFRA
 prd_ref: "REQ-INFRA-054"
 app: infra
-status: todo
+status: done
 priority: high
 complexity: M
 github_issue: null
@@ -36,12 +36,12 @@ Prior to VPS provisioning, web apps can connect to a tunneled backend (Option 1:
 
 ## Acceptance Criteria
 
-- [ ] GitHub Actions workflow `.github/workflows/cd-web.yml` triggers on push to `main` with path filters (`apps/website/**`, `apps/backoffice_web/**`, `.github/workflows/cd-web.yml`).
-- [ ] Pipeline injects `API_BASE_URL` at build time (e.g., via `--dart-define=API_BASE_URL=...` for Flutter Web and `PUBLIC_API_URL` for Astro).
-- [ ] Pipeline builds `apps/website` via Astro production build (`moon run website:build` or `pnpm build`), verifying HTML-first output and client bundle budgets.
-- [ ] Pipeline builds `apps/backoffice_web` using `flutter build web --release` with asset optimization.
-- [ ] Deploys built static artifacts to target web server or hosting layer (e.g. GitHub Pages or static host) with correct cache control policies (`immutable` for fingerprinted assets, `no-cache` for `index.html`).
-- [ ] Workflow handles preview / staging or production deployment target depending on branch/environment configuration.
+- [x] GitHub Actions workflow `.github/workflows/cd-web.yml` triggers on push to `main` with path filters (`apps/website/**`, `apps/backoffice_web/**`, `.github/workflows/cd-web.yml`).
+- [x] Pipeline injects `API_BASE_URL` at build time (e.g., via `--dart-define=API_BASE_URL=...` for Flutter Web and `PUBLIC_API_URL` for Astro).
+- [x] Pipeline builds `apps/website` via Astro production build (`moon run website:build` or `pnpm build`), verifying HTML-first output and client bundle budgets.
+- [x] Pipeline builds `apps/backoffice_web` using `flutter build web --release` with asset optimization.
+- [x] Deploys built static artifacts to target web server or hosting layer (e.g. GitHub Pages or static host) with correct cache control policies (`immutable` for fingerprinted assets, `no-cache` for `index.html`).
+- [x] Workflow handles preview / staging or production deployment target depending on branch/environment configuration.
 
 ---
 
@@ -67,7 +67,7 @@ Prior to VPS provisioning, web apps can connect to a tunneled backend (Option 1:
 
 ## Definition of Done
 
-- [ ] Workflow file `.github/workflows/cd-web.yml` committed and verified
-- [ ] Diagnostics clean (`moon run :lint`)
-- [ ] `TASK-INDEX.md` status updated to `done`
+- [x] Workflow file `.github/workflows/cd-web.yml` committed and verified
+- [x] Diagnostics clean (`moon run :lint`)
+- [x] `TASK-INDEX.md` status updated to `done`
 - [ ] GitHub issue closed

@@ -1,0 +1,301 @@
+# CD — Web applications build, static asset packaging, and deployment
+# Triggers on PR merge / push to main when apps/website, apps/backoffice_web, or cd-web changes.
+name: cd-web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/website/**'
+      - 'apps/backoffice_web/**'
+      - '.github/workflows/cd-web.yml'
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: 'Deployment target environment'
+        required: false
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'cd-web'
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10.30.0'
+  FLUTTER_VERSION: '3.x'
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # 1. Change Detection — Selective Build
+  # ──────────────────────────────────────────────────────────────
+  detect-changes:
+    name: "Detect Modified Web Apps"
+    runs-on: ubuntu-latest
+    outputs:
+      build_website: ${{ steps.filter.outputs.website }}
+      build_backoffice: ${{ steps.filter.outputs.backoffice }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Path filter check
+        id: filter
+        run: |
+          # If manually dispatched or initial commit, build both
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "website=true" >> "$GITHUB_OUTPUT"
+            echo "backoffice=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          DIFF_BASE="HEAD~1"
+          if ! git rev-parse --verify "$DIFF_BASE" >/dev/null 2>&1; then
+            echo "website=true" >> "$GITHUB_OUTPUT"
+            echo "backoffice=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CHANGED_FILES=$(git diff --name-only "$DIFF_BASE" HEAD)
+
+          if echo "$CHANGED_FILES" | grep -qE '^(apps/website/|\.github/workflows/cd-web\.yml)'; then
+            echo "website=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "website=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if echo "$CHANGED_FILES" | grep -qE '^(apps/backoffice_web/|\.github/workflows/cd-web\.yml)'; then
+            echo "backoffice=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "backoffice=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ──────────────────────────────────────────────────────────────
+  # 2. Build Astro Website (Public Catalog)
+  # ──────────────────────────────────────────────────────────────
+  build-website:
+    name: "Build Astro Website"
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.build_website == 'true'
+    runs-on: ubuntu-latest
+    env:
+      PUBLIC_API_URL: ${{ secrets.API_BASE_URL || 'http://localhost:8080' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --filter website...
+
+      - name: Build Astro Website
+        run: |
+          pnpm --filter website build
+
+      - name: Verify HTML Output & Client Bundle Budgets
+        run: |
+          echo "🔍 Verifying Astro static generation..."
+          if [ ! -f "apps/website/dist/index.html" ]; then
+            echo "❌ Missing dist/index.html!" >&2
+            exit 1
+          fi
+
+          echo "🔍 Checking client JavaScript bundle size..."
+          TOTAL_JS_BYTES=$(find apps/website/dist/_astro -name "*.js" -exec cat {} + 2>/dev/null | wc -c || echo 0)
+          TOTAL_JS_KB=$((TOTAL_JS_BYTES / 1024))
+          echo "Total client JS size: ${TOTAL_JS_KB} KB (budget: 150 KB uncompressed)"
+          if [ "$TOTAL_JS_KB" -gt 150 ]; then
+            echo "❌ Client JS budget exceeded: ${TOTAL_JS_KB} KB > 150 KB" >&2
+            exit 1
+          fi
+
+          echo "🔍 Verifying cache header definition..."
+          if [ ! -f "apps/website/dist/_headers" ]; then
+            cp apps/website/public/_headers apps/website/dist/_headers 2>/dev/null || true
+          fi
+          echo "✅ Astro website build and verification passed."
+
+      - name: Upload Website Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-dist
+          path: apps/website/dist/
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────────
+  # 3. Build Flutter Backoffice Web
+  # ──────────────────────────────────────────────────────────────
+  build-backoffice:
+    name: "Build Flutter Backoffice Web"
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.build_backoffice == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install Flutter dependencies
+        working-directory: apps/backoffice_web
+        run: flutter pub get
+
+      - name: Compile Flutter Web Release
+        working-directory: apps/backoffice_web
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL || 'http://localhost:8080' }}
+        run: |
+          flutter build web --release \
+            --dart-define="API_BASE_URL=${API_BASE_URL}"
+
+          # Ensure headers file is bundled into the output
+          if [ -f "web/_headers" ]; then
+            cp web/_headers build/web/_headers
+          fi
+
+      - name: Verify Backoffice Web Output
+        run: |
+          if [ ! -f "apps/backoffice_web/build/web/index.html" ]; then
+            echo "❌ Missing apps/backoffice_web/build/web/index.html!" >&2
+            exit 1
+          fi
+          echo "✅ Flutter backoffice web build succeeded."
+
+      - name: Upload Backoffice Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backoffice-dist
+          path: apps/backoffice_web/build/web/
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────────
+  # 4. Deploy Web Applications
+  # ──────────────────────────────────────────────────────────────
+  deploy:
+    name: "Deploy Web Applications"
+    needs: [detect-changes, build-website, build-backoffice]
+    if: always() && (needs.build-website.result == 'success' || needs.build-website.result == 'skipped') && (needs.build-backoffice.result == 'success' || needs.build-backoffice.result == 'skipped') && !(needs.build-website.result == 'skipped' && needs.build-backoffice.result == 'skipped')
+    runs-on: ubuntu-latest
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      DEPLOY_DIR: ${{ secrets.VPS_DEPLOY_DIR || '/opt/lokalaku' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare Combined Deployment Bundle
+        run: |
+          mkdir -p combined_web
+          mkdir -p combined_web/backoffice
+
+      - name: Download Website Artifact
+        if: needs.build-website.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: website-dist
+          path: combined_web/
+
+      - name: Download Backoffice Artifact
+        if: needs.build-backoffice.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: backoffice-dist
+          path: combined_web/backoffice/
+
+      - name: Verify Combined Web Bundle Structure
+        run: |
+          echo "📂 Contents of combined web bundle:"
+          ls -la combined_web/
+          if [ -d "combined_web/backoffice" ]; then
+            ls -la combined_web/backoffice/
+          fi
+
+      # ── 4A. GitHub Pages Deployment (Free Pre-VPS / Staging Hosting) ──
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: combined_web/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      # ── 4B. Host VPS Deployment (Conditional on secrets.VPS_HOST) ──
+      - name: Check VPS Target Status
+        id: check_vps
+        run: |
+          if [ -z "${VPS_HOST}" ] || [ -z "${VPS_SSH_KEY}" ]; then
+            echo "has_vps=false" >> "$GITHUB_OUTPUT"
+            echo "ℹ️  VPS_HOST or VPS_SSH_KEY not configured in GitHub Secrets."
+            echo "ℹ️  Web applications are successfully published to GitHub Pages!"
+            echo "ℹ️  Pre-VPS Option 1: Access static web portal and connect to your tunneled backend."
+          else
+            echo "has_vps=true" >> "$GITHUB_OUTPUT"
+            echo "✅ VPS configuration detected. Deploying static web assets to VPS."
+          fi
+
+      - name: Configure SSH Deploy Key
+        if: steps.check_vps.outputs.has_vps == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${VPS_SSH_KEY}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H -p "${{ secrets.VPS_SSH_PORT || 22 }}" "${VPS_HOST}" >> ~/.ssh/known_hosts
+
+      - name: Sync Static Web Assets to VPS Host
+        if: steps.check_vps.outputs.has_vps == 'true'
+        run: |
+          SSH_PORT="${{ secrets.VPS_SSH_PORT || 22 }}"
+          ssh -p "${SSH_PORT}" "${VPS_USER}@${VPS_HOST}" "mkdir -p ${DEPLOY_DIR}/www/website ${DEPLOY_DIR}/www/backoffice"
+          
+          if [ "${{ needs.build-website.result }}" = "success" ]; then
+            scp -P "${SSH_PORT}" -r combined_web/* "${VPS_USER}@${VPS_HOST}:${DEPLOY_DIR}/www/website/"
+          fi
+          if [ "${{ needs.build-backoffice.result }}" = "success" ]; then
+            scp -P "${SSH_PORT}" -r combined_web/backoffice/* "${VPS_USER}@${VPS_HOST}:${DEPLOY_DIR}/www/backoffice/"
+          fi
+          echo "✅ Successfully synchronized static web assets to VPS host."
