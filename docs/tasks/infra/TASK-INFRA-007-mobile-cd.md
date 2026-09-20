@@ -30,7 +30,7 @@ Build an automated Continuous Delivery (CD) workflow in GitHub Actions that trig
 
 Lokalaku's ecosystem relies on multiple mobile clients: Consumer App (Android & Web), Merchant POS App (Android Tablet/Phone), and Courier App (Android Phone). For grassroots operations, merchant pilots, and courier field testing, direct APK distribution and timely internal builds are vital.
 
-The CD workflow must securely inject Android keystores, compile optimized release builds, and publish versioned artifacts automatically whenever mobile code or shared packages are updated on `main`.
+Prior to provisioning a dedicated production VPS, mobile builds connect to the backend exposed via a zero-cost HTTPS tunnel (Option 1: Cloudflare Tunnel via `cloudflared tunnel --url http://localhost:8080`). The CD workflow must dynamically inject the target `API_BASE_URL` at build time without hardcoding hostnames into the repository, securely inject Android keystores, compile optimized release builds, and publish versioned artifacts automatically whenever mobile code or shared packages are updated on `main`.
 
 ---
 
@@ -38,6 +38,7 @@ The CD workflow must securely inject Android keystores, compile optimized releas
 
 - [ ] GitHub Actions workflow `.github/workflows/cd-mobile.yml` triggers on push to `main` with path filters (`apps/consumer_app/**`, `apps/merchant_app/**`, `apps/courier_app/**`, `packages/flutter/**`, `.github/workflows/cd-mobile.yml`).
 - [ ] Matrix strategy builds each modified mobile app independently to optimize CI run duration.
+- [ ] Builds inject `API_BASE_URL` via `--dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}` (pointing to Cloudflare Tunnel during staging/testing, or production VPS once live).
 - [ ] Cryptographic signing implemented using base64-encoded keystore from GitHub Secrets (`ANDROID_KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`) without leaking secrets.
 - [ ] Generates signed universal release APKs (for direct download and sideloading) and AABs (for Play Console tracks).
 - [ ] Releases are stamped with semantic version and incremental build number (derived from GitHub run number or git commit count).
@@ -48,6 +49,8 @@ The CD workflow must securely inject Android keystores, compile optimized releas
 ## Technical Notes
 
 - Target path filters: `apps/consumer_app/**`, `apps/merchant_app/**`, `apps/courier_app/**`, `packages/flutter/**`, `.github/workflows/cd-mobile.yml`.
+- Build command pattern: `flutter build apk --release --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL || 'http://10.0.2.2:8080' }}`.
+- Pre-VPS testing (Option 1): Expose local backend with `cloudflared tunnel --url http://localhost:8080` and set GitHub Secret `API_BASE_URL` to the generated tunnel URL. This allows physical test devices on mobile data to connect without a paid VPS.
 - Cache Gradle caches (`~/.gradle/caches`, `~/.gradle/wrapper`) and pub cache (`~/.pub-cache`) for fast rebuilds.
 - Adhere to AGENTS.md rules for low-end device compatibility and asset size discipline.
 - NEVER commit keystores, signing keys, or raw passwords into version control.

@@ -47,6 +47,28 @@ func TestHealthEndpoint(t *testing.T) {
 	}
 }
 
+func TestHealthzEndpoint(t *testing.T) {
+	r := router.New(nil, nil, nil, nil)
+
+	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	rec := httptest.NewRecorder()
+
+	r.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rec.Code)
+	}
+
+	var res router.HealthResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &res); err != nil {
+		t.Fatalf("failed to decode response JSON: %v", err)
+	}
+
+	if res.Status != "ok" {
+		t.Errorf("expected status 'ok', got '%s'", res.Status)
+	}
+}
+
 func TestAuthEndToEnd(t *testing.T) {
 	ctx := context.Background()
 	tokenSvc := auth.NewTokenService("test-secret-32-bytes-long-key-lokalaku", 15*time.Minute, 24*time.Hour)

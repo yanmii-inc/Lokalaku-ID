@@ -71,6 +71,15 @@ services:
       redis:
         condition: service_healthy
 
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: lokalaku_tunnel_dev
+    restart: unless-stopped
+    profiles: ["tunnel"]
+    command: tunnel --no-autoupdate --url http://api:8080
+    depends_on:
+      - api
+
 volumes:
   postgres_data:
     driver: local
