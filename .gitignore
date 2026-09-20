@@ -155,3 +155,5 @@ TODO.md
 # Dart / Flutter build artifacts
 .dart_tool/
 
+.flutter-plugins*
+

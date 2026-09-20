@@ -54,7 +54,7 @@
 | [TASK-API-004](./api/TASK-API-004-otp-verification.md) | OTP issuance & verification endpoint | REQ-BG-006 | 🔴 | M | ✅ | — |
 | [TASK-API-005](./api/TASK-API-005-account-state-machine.md) | Account status state machine middleware | REQ-BG-005 | 🔴 | M | ✅ | — |
 | [TASK-PKG-001](./pkg/TASK-PKG-001-domain-entities-auth.md) | `domain` entities: Account, Role, Session, AuthToken | — | 🔴 | S | ✅ | — |
-| [TASK-PKG-002](./pkg/TASK-PKG-002-core-auth-package.md) | `core_auth`: token storage, refresh timer, offline PIN | REQ-BG-004 | 🔴 | XL | 📋 | — |
+| [TASK-PKG-002](./pkg/TASK-PKG-002-core-auth-package.md) | `core_auth`: token storage, refresh timer, offline PIN | REQ-BG-004 | 🔴 | XL | ✅ | — |
 | [TASK-PKG-003](./pkg/TASK-PKG-003-core-network-interceptor.md) | `core_network`: auth interceptor & 401 retry | REQ-BG-004 | 🔴 | M | 📋 | — |
 
 ---
