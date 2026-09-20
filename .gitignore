@@ -151,3 +151,7 @@ TODO.md
 .rtk/
 .gemini/
 .claude/
+
+# Dart / Flutter build artifacts
+.dart_tool/
+
