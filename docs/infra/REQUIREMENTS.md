@@ -92,7 +92,8 @@ if a decision backs it.
 
 - **REQ-INFRA-040 (Secret Handling):** Secrets (DB credentials, JWT signing keys, SMTP creds) must be
   supplied via environment / Docker secrets, never committed to the repo. `google-services`, key
-  files, and archives are git-ignored by policy.
+  files, and archives are git-ignored by policy. See [`SETUP_SECRETS_AND_CREDS.md`](./SETUP_SECRETS_AND_CREDS.md)
+  for secret inventory and setup instructions.
 - **REQ-INFRA-041 (Minimal Attack Surface):** Production images must be minimal (`distroless`/`scratch`
   for the Go binary). No shell or package manager in the final image unless a documented need exists.
 - **REQ-INFRA-042 (Network Exposure):** Only the API/web entrypoints and intentionally-public services
