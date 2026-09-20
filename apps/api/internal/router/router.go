@@ -45,6 +45,7 @@ func New(logger *slog.Logger, authService *auth.Service, tokenService *auth.Toke
 			if tokenService != nil {
 				r.Group(func(r chi.Router) {
 					r.Use(custommiddleware.RequireAuth(tokenService))
+					r.Use(custommiddleware.RequireActiveAccount)
 					r.Get("/me", handleMe)
 				})
 			}
