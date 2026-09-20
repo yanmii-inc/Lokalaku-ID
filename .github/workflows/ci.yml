@@ -2,6 +2,12 @@
 # Runs on every pull request targeting main and on direct pushes.
 # Each job delegates to Moon so task caching, dependency ordering,
 # and toolchain pinning are handled consistently with local dev.
+#
+# Moon is installed directly via the official install script pinned
+# to the version in .prototools. We intentionally bypass
+# setup-toolchain / setup-moon-action because those actions invoke
+# `proto install` which tries to resolve all workspace tools
+# (including pnpm) before any Node runtime is available.
 name: ci
 
 on:
@@ -9,6 +15,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+
+env:
+  MOON_VERSION: "2.2.4"
 
 jobs:
   # ──────────────────────────────────────────────────────────────
@@ -55,7 +64,10 @@ jobs:
           cache-dependency-path: apps/api/go.sum
 
       - name: Install Moon
-        uses: moonrepo/setup-moon-action@v2
+        run: |
+          curl -fsSL https://moonrepo.dev/install/moon.sh | \
+            MOON_VERSION="${MOON_VERSION}" bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
       - name: Lint (go vet)
         run: moon run api:lint
@@ -82,7 +94,10 @@ jobs:
           channel: stable
 
       - name: Install Moon
-        uses: moonrepo/setup-moon-action@v2
+        run: |
+          curl -fsSL https://moonrepo.dev/install/moon.sh | \
+            MOON_VERSION="${MOON_VERSION}" bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
       - name: Install Dart dependencies
         run: moon run :get
