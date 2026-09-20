@@ -28,6 +28,7 @@ func New(logger *slog.Logger, authService *auth.Service, tokenService *auth.Toke
 	}
 
 	r.Get("/health", handleHealth)
+	r.Get("/healthz", handleHealth)
 
 	// Auth routes
 	if authService != nil {

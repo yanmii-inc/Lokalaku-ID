@@ -9,9 +9,11 @@
 ## Business Domain Terms
 
 ### Village Cluster (`village_cluster_id`)
-The root unit of the Lokalaku platform. Represents a geographically bounded community (a desa or set of neighbouring hamlets). All data — accounts, products, orders, and transactions — is owned by exactly one village cluster and isolated from all others. This is the fundamental data sovereignty boundary.
+The root unit of the Lokalaku platform. Represents a geographically bounded community (a desa or set of neighbouring hamlets). Merchant accounts, local inventory, and village admin data belong to exactly one village cluster. This is the fundamental data sovereignty boundary.
 
-**Exception:** Consumer-facing store and product discovery is exempt from cluster filtering. It operates on geographic radius (GPS proximity) and may return results from multiple clusters. Cluster scoping applies only to merchant operations, Pool Buying, courier dispatch, wholesaler assignments, and all administrative data.
+**Cluster Scoping Rules:**
+- **Cluster-Bound:** `merchant` and `backoffice_admin` (bound to a single `village_cluster_id`).
+- **Cluster-Independent:** `wholesaler` (supplies across clusters), `courier` (delivers across clusters), `consumer` (browses via GPS proximity across clusters), and `superadmin` (manages all clusters).
 
 ### Pool Order (Pool Buying / Pembelian Kolektif)
 A collective buying event initiated by a Wholesaler for a specific product. Multiple Merchants pledge individual quantities toward a shared Minimum Order Quantity (MOQ) threshold. When the threshold is met, factory-direct pricing unlocks and a single consolidated wholesale order is placed. Pool Orders follow a strict one-way state machine — see **Pool Status** below.

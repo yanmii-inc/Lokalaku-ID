@@ -107,6 +107,22 @@ if a decision backs it.
   mirroring the local `commit-msg` hook.
 - **REQ-INFRA-051 (Build & Lint Gate):** CI must build all artifacts and run `moon :lint` / `go vet`
   before merge to `main`.
+- **REQ-INFRA-052 (Continuous Deployment on PR Merge):** Deployment pipelines must execute
+  automatically upon pull request merge into the default branch (`main`). Pipelines must use
+  path-based change detection so that only services and applications directly touched by the merge
+  are rebuilt and redeployed.
+- **REQ-INFRA-053 (Backend CD & Migration Safety):** Merges affecting `apps/api` or database
+  migrations must build minimal production container images (`distroless`/`scratch` per REQ-INFRA-041),
+  push to a secure registry, execute pending database migrations with rollback capability before
+  routing traffic, and roll out updates to the host without downtime or manual intervention.
+- **REQ-INFRA-054 (Web Applications Continuous Delivery):** Merges affecting public web portals or
+  web backoffice applications (`apps/website`, `apps/backoffice_web`) must compile optimized,
+  production-grade release bundles and deploy them to their serving layer with automated asset caching
+  and cache invalidation.
+- **REQ-INFRA-055 (Mobile Applications Continuous Packaging & Delivery):** Merges affecting mobile
+  client apps must trigger automated assembly of cryptographically signed release packages (APKs and
+  AABs) using securely injected build credentials, publishing versioned artifacts to internal
+  distribution channels for immediate testing.
 
 ---
 

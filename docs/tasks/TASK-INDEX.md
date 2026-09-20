@@ -53,9 +53,9 @@
 | [TASK-API-003](./api/TASK-API-003-jwt-auth-endpoints.md) | JWT auth endpoints (login, refresh, logout) | REQ-BG-004 | 🔴 | L | ✅ | — |
 | [TASK-API-004](./api/TASK-API-004-otp-verification.md) | OTP issuance & verification endpoint | REQ-BG-006 | 🔴 | M | ✅ | — |
 | [TASK-API-005](./api/TASK-API-005-account-state-machine.md) | Account status state machine middleware | REQ-BG-005 | 🔴 | M | ✅ | — |
-| [TASK-PKG-001](./pkg/TASK-PKG-001-domain-entities-auth.md) | `domain` entities: Account, Role, Session, AuthToken | — | 🔴 | S | 📋 | — |
-| [TASK-PKG-002](./pkg/TASK-PKG-002-core-auth-package.md) | `core_auth`: token storage, refresh timer, offline PIN | REQ-BG-004 | 🔴 | XL | 📋 | — |
-| [TASK-PKG-003](./pkg/TASK-PKG-003-core-network-interceptor.md) | `core_network`: auth interceptor & 401 retry | REQ-BG-004 | 🔴 | M | 📋 | — |
+| [TASK-PKG-001](./pkg/TASK-PKG-001-domain-entities-auth.md) | `domain` entities: Account, Role, Session, AuthToken | — | 🔴 | S | ✅ | — |
+| [TASK-PKG-002](./pkg/TASK-PKG-002-core-auth-package.md) | `core_auth`: token storage, refresh timer, offline PIN | REQ-BG-004 | 🔴 | XL | ✅ | — |
+| [TASK-PKG-003](./pkg/TASK-PKG-003-core-network-interceptor.md) | `core_network`: auth interceptor & 401 retry | REQ-BG-004 | 🔴 | M | ✅ | — |
 
 ---
 
@@ -111,6 +111,9 @@
 | [TASK-INFRA-002](./infra/TASK-INFRA-002-seed-scripts.md) | Seed scripts for test data | — | 🔴 | M | ✅ | #3 |
 | [TASK-INFRA-003](./infra/TASK-INFRA-003-moon-config.md) | Moon task runner configuration | — | 🔴 | S | ✅ | #4 |
 | [TASK-INFRA-004](./infra/TASK-INFRA-004-git-hooks.md) | Git hooks for lint, format, and vet | — | 🔴 | S | ✅ | #5 |
+| [TASK-INFRA-005](./infra/TASK-INFRA-005-backend-cd.md) | Backend CD pipeline (Docker, GHCR, VPS deploy) | REQ-INFRA-053 | 🔴 | M | ✅ | — |
+| [TASK-INFRA-006](./infra/TASK-INFRA-006-web-cd.md) | Web CD pipeline (Astro website & Flutter web) | REQ-INFRA-054 | 🔴 | M | 📋 | — |
+| [TASK-INFRA-007](./infra/TASK-INFRA-007-mobile-cd.md) | Mobile CD pipeline (Flutter Android build & distribution) | REQ-INFRA-055 | 🔴 | L | 📋 | — |
 
 ## How to Add a New Task
 

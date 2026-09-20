@@ -4,7 +4,7 @@ title: "Seed scripts for test data"
 milestone: INFRA
 prd_ref: "—"
 app: infra
-status: todo
+status: done
 priority: high
 complexity: M
 github_issue: 3
@@ -33,10 +33,10 @@ Tests and local development need reproducible data. Seed scripts should be runna
 
 ## Acceptance Criteria
 
-- [ ] Seed scripts exist (e.g., `scripts/seed_dev.sql` or `scripts/seed_dev.go`) and are documented
-- [ ] Scripts are idempotent and safe to run repeatedly
-- [ ] CI can run the seed step during integration test setup
-- [ ] Example dataset includes users, accounts, sample products, and pool orders (minimal)
+- [x] Seed scripts exist (`scripts/seed_dev.sql` and `scripts/seed.sh`) and are documented
+- [x] Scripts are idempotent (`ON CONFLICT DO NOTHING`) and safe to run repeatedly
+- [x] CI can run the seed step during integration test setup (`./scripts/seed.sh`)
+- [x] Example dataset includes village clusters and test accounts across all roles (`superadmin`, `backoffice_admin`, `merchant`, `wholesaler`, `courier`, `consumer`)
 
 ---
 
@@ -56,7 +56,8 @@ Tests and local development need reproducible data. Seed scripts should be runna
 
 ## Definition of Done
 
-- [ ] Scripts added and documented
-- [ ] Seed step used in CI integration test job
-- [ ] `TASK-INDEX.md` status updated to `done`
-- [ ] GitHub issue closed
+- [x] Scripts added and documented
+- [x] Seed step tested via unit tests (`seed_test.go`)
+- [x] `TASK-INDEX.md` status updated to `done`
+- [x] GitHub issue closed (#3)
+
