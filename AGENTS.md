@@ -258,9 +258,23 @@ Key rules (read the full doc for examples and all footer trailers):
 |:---|:---|
 | **Types** | `feat` `fix` `docs` `refactor` `test` `chore` `perf` `ci` `revert` `style` |
 | **Scopes** | `api` `consumer` `merchant` `courier` `wholesale` `backoffice` `website` `domain` `data` `core-auth` `core-network` `ui-kit` `utils` `infra` `docs` `workspace` |
-| **Footers** | `Implements: REQ-XX-NNN` · `See: ADR-NNN` · `Closes: #NNN` · `BREAKING CHANGE: <desc>` |
+| **Footers** | `Implements: REQ-XX-NNN` · `See: ADR-NNN` · `Closes: #NNN` · `Refs: #NNN` · `BREAKING CHANGE: <desc>` |
 
 Enforced automatically by `commitlint` (`.commitlintrc.json`). Templated by `.gitmessage`.
+
+> [!CAUTION]
+> **Two rules CI will reject — memorise these before every commit:**
+>
+> **Rule 1 — Scope is NEVER optional.**
+> `feat: add X` → rejected. Always `feat(<scope>): add X`.
+> Pick from the valid scopes above. Bare type with no parentheses = CI failure.
+>
+> **Rule 2 — `feat` / `fix` / `perf` commits MUST include a traceability footer.**
+> At least one of: `Implements: REQ-XX-NNN` · `See: ADR-NNN` · `Closes: #NNN` · `Refs: #NNN`
+> All other types (`docs`, `refactor`, `test`, `chore`, `ci`, `style`, `revert`) are exempt.
+>
+> **Rule 3 — Line length ≤ 72 chars everywhere** (subject, body lines, footer lines).
+
 
 <!-- graft:start -->
 ## Graft — repo context graph
