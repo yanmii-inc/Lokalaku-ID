@@ -4,7 +4,7 @@ title: "Docker Compose for local development"
 milestone: INFRA
 prd_ref: "—"
 app: infra
-status: todo
+status: done
 priority: high
 complexity: M
 github_issue: 2
@@ -39,10 +39,10 @@ Refer to `docs/infra/REQUIREMENTS.md` for infra constraints.
 
 ## Acceptance Criteria
 
-- [ ] `docker-compose.dev.yml` exists at repo root with services: `api`, `postgres`, `redis`
-- [ ] Postgres uses a named volume and has example init scripts or supports a seed step (TASK-INFRA-002)
-- [ ] README includes start/stop/reset instructions
-- [ ] Compose is usable in CI for integration tests (no interactive prompts)
+- [x] `docker-compose.dev.yml` exists at repo root with services: `api`, `postgres`, `redis`, `mailpit`
+- [x] Postgres uses a named volume (`postgres_data`) and supports seeding (TASK-INFRA-002)
+- [x] README includes start/stop/reset instructions
+- [x] Compose is usable in CI for integration tests (no interactive prompts)
 
 ---
 
@@ -64,7 +64,8 @@ Refer to `docs/infra/REQUIREMENTS.md` for infra constraints.
 
 ## Definition of Done
 
-- [ ] Code written and self-reviewed
-- [ ] Documentation added to README
-- [ ] `TASK-INDEX.md` status updated to `done`
-- [ ] GitHub issue closed
+- [x] Code written and self-reviewed
+- [x] Documentation added to README
+- [x] `TASK-INDEX.md` status updated to `done`
+- [x] GitHub issue closed (#2)
+
