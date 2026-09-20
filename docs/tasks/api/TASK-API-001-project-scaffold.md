@@ -4,7 +4,7 @@ title: "Go project scaffold & Chi router setup"
 milestone: M001
 prd_ref: "—"
 app: api
-status: todo
+status: done
 priority: high
 complexity: M
 github_issue: null
@@ -38,14 +38,14 @@ See also:
 
 ## Acceptance Criteria
 
-- [ ] `apps/api/cmd/server/main.go` compiles and starts without errors.
-- [ ] Chi router is wired in `apps/api/internal/router/router.go`.
-- [ ] Structured JSON request logging middleware is mounted (use Go stdlib `log/slog` — no external logger).
-- [ ] `GET /health` returns `{"status":"ok","version":"dev"}` with HTTP 200.
-- [ ] Graceful shutdown: SIGTERM/SIGINT drains in-flight requests within a configurable timeout (default 10s), then exits cleanly.
-- [ ] `apps/api/Dockerfile` builds the binary into a minimal `distroless/static` or `scratch` image.
-- [ ] `go build ./apps/api/cmd/server` succeeds from the repo root.
-- [ ] `go vet ./apps/api/...` passes with zero warnings.
+- [x] `apps/api/cmd/server/main.go` compiles and starts without errors.
+- [x] Chi router is wired in `apps/api/internal/router/router.go`.
+- [x] Structured JSON request logging middleware is mounted (use Go stdlib `log/slog` — no external logger).
+- [x] `GET /health` returns `{"status":"ok","version":"dev"}` with HTTP 200.
+- [x] Graceful shutdown: SIGTERM/SIGINT drains in-flight requests within a configurable timeout (default 10s), then exits cleanly.
+- [x] `apps/api/Dockerfile` builds the binary into a minimal `distroless/static` or `scratch` image.
+- [x] `go build ./apps/api/cmd/server` succeeds from the repo root.
+- [x] `go vet ./apps/api/...` passes with zero warnings.
 
 ---
 
@@ -96,8 +96,9 @@ type Config struct {
 
 ## Definition of Done
 
-- [ ] Code written and self-reviewed
-- [ ] `go build ./apps/api/cmd/server` succeeds
-- [ ] `go vet ./apps/api/...` passes
-- [ ] `TASK-INDEX.md` status updated to `done`
+- [x] Code written and self-reviewed
+- [x] `go build ./apps/api/cmd/server` succeeds
+- [x] `go vet ./apps/api/...` passes
+- [x] `TASK-INDEX.md` status updated to `done`
 - [ ] GitHub issue closed (link in frontmatter above)
+
