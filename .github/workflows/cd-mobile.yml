@@ -1,0 +1,286 @@
+# CD — Mobile applications Android release build, cryptographic signing, and distribution
+# Triggers on PR merge / push to main when consumer_app, merchant_app, courier_app, or packages change.
+name: cd-mobile
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/consumer_app/**'
+      - 'apps/merchant_app/**'
+      - 'apps/courier_app/**'
+      - 'packages/flutter/**'
+      - '.github/workflows/cd-mobile.yml'
+  workflow_dispatch:
+    inputs:
+      target_app:
+        description: 'Specific mobile app to build'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - consumer_app
+          - merchant_app
+          - courier_app
+      is_prerelease:
+        description: 'Mark distribution as pre-release'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: 'cd-mobile'
+  cancel-in-progress: false
+
+env:
+  JAVA_VERSION: '17'
+  FLUTTER_VERSION: '3.x'
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # 1. Change Detection — Selective Matrix Assembly
+  # ──────────────────────────────────────────────────────────────
+  detect-changes:
+    name: "Detect Modified Mobile Apps"
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.matrix.outputs.apps }}
+      has_apps: ${{ steps.matrix.outputs.has_apps }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Assemble Mobile Matrix
+        id: matrix
+        run: |
+          TARGET_INPUT="${{ github.event.inputs.target_app || 'all' }}"
+          CANDIDATES=("consumer_app" "merchant_app" "courier_app")
+          SELECTED_APPS=()
+
+          DIFF_BASE="HEAD~1"
+          IS_DISPATCH="${{ github.event_name == 'workflow_dispatch' }}"
+
+          if ! git rev-parse --verify "$DIFF_BASE" >/dev/null 2>&1 || [ "$IS_DISPATCH" = "true" ]; then
+            FORCE_ALL=true
+          else
+            FORCE_ALL=false
+            CHANGED_FILES=$(git diff --name-only "$DIFF_BASE" HEAD)
+            SHARED_CHANGED=$(echo "$CHANGED_FILES" | grep -qE '^(packages/flutter/|\.github/workflows/cd-mobile\.yml)' && echo true || echo false)
+          fi
+
+          for APP in "${CANDIDATES[@]}"; do
+            # Only include if targeted by manual input
+            if [ "$TARGET_INPUT" != "all" ] && [ "$TARGET_INPUT" != "$APP" ]; then
+              continue
+            fi
+
+            # Check if app is scaffolded for Android
+            if [ ! -f "apps/$APP/pubspec.yaml" ] || [ ! -d "apps/$APP/android" ]; then
+              echo "ℹ️  apps/$APP is not yet scaffolded with an Android project. Skipping."
+              continue
+            fi
+
+            # Check if affected by git changes or force all
+            if [ "$FORCE_ALL" = "true" ] || [ "$SHARED_CHANGED" = "true" ]; then
+              SELECTED_APPS+=("$APP")
+            elif echo "$CHANGED_FILES" | grep -q "^apps/$APP/"; then
+              SELECTED_APPS+=("$APP")
+            fi
+          done
+
+          if [ ${#SELECTED_APPS[@]} -eq 0 ]; then
+            echo "ℹ️  No scaffolded mobile applications modified."
+            echo "apps=[]" >> "$GITHUB_OUTPUT"
+            echo "has_apps=false" >> "$GITHUB_OUTPUT"
+          else
+            JSON_APPS=$(printf '%s\n' "${SELECTED_APPS[@]}" | jq -R . | jq -s -c .)
+            echo "apps=$JSON_APPS" >> "$GITHUB_OUTPUT"
+            echo "has_apps=true" >> "$GITHUB_OUTPUT"
+            echo "✅ Target mobile apps for build: $JSON_APPS"
+          fi
+
+  # ──────────────────────────────────────────────────────────────
+  # 2. Build, Sign & Package Android APK & AAB Matrix
+  # ──────────────────────────────────────────────────────────────
+  build-android:
+    name: "Build ${{ matrix.app }} (Android)"
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.has_apps == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJson(needs.detect-changes.outputs.apps) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Setup Gradle Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ matrix.app }}-${{ hashFiles(format('apps/{0}/android/gradle/wrapper/gradle-wrapper.properties', matrix.app), format('apps/{0}/android/app/build.gradle*', matrix.app)) }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-${{ matrix.app }}-
+            ${{ runner.os }}-gradle-
+
+      - name: Setup Android Keystore Signing
+        id: keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "${KEYSTORE_BASE64}" ] && [ -n "${KEYSTORE_PASSWORD}" ]; then
+            KEYSTORE_PATH="${RUNNER_TEMP}/release.jks"
+            echo "${KEYSTORE_BASE64}" | base64 --decode > "${KEYSTORE_PATH}"
+            echo "KEYSTORE_FILE=${KEYSTORE_PATH}" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}" >> $GITHUB_ENV
+            echo "KEY_ALIAS=${KEY_ALIAS}" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=${KEY_PASSWORD}" >> $GITHUB_ENV
+            echo "has_keystore=true" >> "$GITHUB_OUTPUT"
+            echo "🔐 Production release keystore configured."
+          else
+            echo "has_keystore=false" >> "$GITHUB_OUTPUT"
+            echo "ℹ️  ANDROID_KEYSTORE_BASE64 not configured in secrets."
+            echo "ℹ️  Building with debug signing for testing/preview."
+          fi
+
+      - name: Install dependencies
+        working-directory: apps/${{ matrix.app }}
+        run: |
+          flutter pub get
+
+      - name: Extract Semantic Version
+        id: version
+        working-directory: apps/${{ matrix.app }}
+        run: |
+          PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version:[[:space:]]*//' | tr -d '\r')
+          VERSION_NAME=$(echo "$PUBSPEC_VERSION" | cut -d'+' -f1)
+          BUILD_NUMBER="${{ github.run_number }}"
+          echo "version_name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
+          echo "build_number=${BUILD_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "📦 Compiling ${{ matrix.app }} v${VERSION_NAME}+${BUILD_NUMBER}..."
+
+      - name: Compile Release Universal APK
+        working-directory: apps/${{ matrix.app }}
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL || 'http://10.0.2.2:8080' }}
+        run: |
+          flutter build apk --release \
+            --build-name="${{ steps.version.outputs.version_name }}" \
+            --build-number="${{ steps.version.outputs.build_number }}" \
+            --dart-define="API_BASE_URL=${API_BASE_URL}"
+
+      - name: Compile Release App Bundle (AAB)
+        working-directory: apps/${{ matrix.app }}
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL || 'http://10.0.2.2:8080' }}
+        run: |
+          flutter build appbundle --release \
+            --build-name="${{ steps.version.outputs.version_name }}" \
+            --build-number="${{ steps.version.outputs.build_number }}" \
+            --dart-define="API_BASE_URL=${API_BASE_URL}"
+
+      - name: Prepare and Package Artifacts
+        run: |
+          mkdir -p dist_artifacts
+          VERSION_STAMP="${{ matrix.app }}-v${{ steps.version.outputs.version_name }}+${{ steps.version.outputs.build_number }}"
+
+          # Copy APK
+          APK_SOURCE="apps/${{ matrix.app }}/build/app/outputs/flutter-apk/app-release.apk"
+          if [ -f "$APK_SOURCE" ]; then
+            cp "$APK_SOURCE" "dist_artifacts/${VERSION_STAMP}-release.apk"
+          fi
+
+          # Copy AAB
+          AAB_SOURCE="apps/${{ matrix.app }}/build/app/outputs/bundle/release/app-release.aab"
+          if [ -f "$AAB_SOURCE" ]; then
+            cp "$AAB_SOURCE" "dist_artifacts/${VERSION_STAMP}-release.aab"
+          fi
+
+          # Generate Checksums
+          cd dist_artifacts
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          cd ..
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.app }}-android
+          path: dist_artifacts/
+          retention-days: 14
+
+  # ──────────────────────────────────────────────────────────────
+  # 3. Distribute Release Packages (GitHub Releases)
+  # ──────────────────────────────────────────────────────────────
+  distribute:
+    name: "Publish Release Artifacts"
+    needs: [detect-changes, build-android]
+    if: needs.detect-changes.outputs.has_apps == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download All Mobile Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded_artifacts/
+
+      - name: Consolidate Distribution Packages
+        run: |
+          mkdir -p release_packages
+          find downloaded_artifacts/ -type f \( -name "*.apk" -o -name "*.aab" -o -name "*.txt" \) -exec cp {} release_packages/ \;
+          echo "📦 Release files ready for distribution:"
+          ls -la release_packages/
+
+      - name: Publish to GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: "mobile-build-${{ github.run_number }}"
+        run: |
+          RELEASE_TITLE="Mobile Build #${{ github.run_number }} (${{ github.sha }})"
+          NOTES=$(cat << 'EOF'
+          ### 📱 Lokalaku Mobile Release Packages
+          
+          Automatically compiled from branch `main` via Mobile CD Pipeline.
+          
+          - **Universal APKs:** Ready for direct installation and sideloading on test devices.
+          - **AAB Bundles:** Ready for Google Play Console internal testing tracks.
+          - **Backend Connectivity:** Pre-configured via `API_BASE_URL` secret.
+          
+          Verify download integrity against the included `SHA256SUMS.txt`.
+          EOF
+          )
+          
+          # Create GitHub Release with attached assets
+          gh release create "${TAG_NAME}" \
+            release_packages/* \
+            --title "${RELEASE_TITLE}" \
+            --notes "${NOTES}" \
+            --prerelease

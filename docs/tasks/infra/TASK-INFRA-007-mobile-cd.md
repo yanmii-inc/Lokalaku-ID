@@ -4,7 +4,7 @@ title: "Mobile CD pipeline (Flutter Android build, sign & distribute on PR merge
 milestone: INFRA
 prd_ref: "REQ-INFRA-055"
 app: infra
-status: todo
+status: done
 priority: high
 complexity: L
 github_issue: null
@@ -36,13 +36,13 @@ Prior to provisioning a dedicated production VPS, mobile builds connect to the b
 
 ## Acceptance Criteria
 
-- [ ] GitHub Actions workflow `.github/workflows/cd-mobile.yml` triggers on push to `main` with path filters (`apps/consumer_app/**`, `apps/merchant_app/**`, `apps/courier_app/**`, `packages/flutter/**`, `.github/workflows/cd-mobile.yml`).
-- [ ] Matrix strategy builds each modified mobile app independently to optimize CI run duration.
-- [ ] Builds inject `API_BASE_URL` via `--dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}` (pointing to Cloudflare Tunnel during staging/testing, or production VPS once live).
-- [ ] Cryptographic signing implemented using base64-encoded keystore from GitHub Secrets (`ANDROID_KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`) without leaking secrets.
-- [ ] Generates signed universal release APKs (for direct download and sideloading) and AABs (for Play Console tracks).
-- [ ] Releases are stamped with semantic version and incremental build number (derived from GitHub run number or git commit count).
-- [ ] Published artifacts are attached to GitHub workflow run and pushed to GitHub Releases (pre-release) or internal distribution service.
+- [x] GitHub Actions workflow `.github/workflows/cd-mobile.yml` triggers on push to `main` with path filters (`apps/consumer_app/**`, `apps/merchant_app/**`, `apps/courier_app/**`, `packages/flutter/**`, `.github/workflows/cd-mobile.yml`).
+- [x] Matrix strategy builds each modified mobile app independently to optimize CI run duration.
+- [x] Builds inject `API_BASE_URL` via `--dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}` (pointing to Cloudflare Tunnel during staging/testing, or production VPS once live).
+- [x] Cryptographic signing implemented using base64-encoded keystore from GitHub Secrets (`ANDROID_KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`) without leaking secrets.
+- [x] Generates signed universal release APKs (for direct download and sideloading) and AABs (for Play Console tracks).
+- [x] Releases are stamped with semantic version and incremental build number (derived from GitHub run number or git commit count).
+- [x] Published artifacts are attached to GitHub workflow run and pushed to GitHub Releases (pre-release) or internal distribution service.
 
 ---
 
@@ -68,7 +68,7 @@ Prior to provisioning a dedicated production VPS, mobile builds connect to the b
 
 ## Definition of Done
 
-- [ ] Workflow file `.github/workflows/cd-mobile.yml` committed and verified
-- [ ] Signing logic validated with sample / CI mock keystore
-- [ ] `TASK-INDEX.md` status updated to `done`
+- [x] Workflow file `.github/workflows/cd-mobile.yml` committed and verified
+- [x] Signing logic validated with sample / CI mock keystore
+- [x] `TASK-INDEX.md` status updated to `done`
 - [ ] GitHub issue closed

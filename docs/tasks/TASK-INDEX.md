@@ -113,7 +113,7 @@
 | [TASK-INFRA-004](./infra/TASK-INFRA-004-git-hooks.md) | Git hooks for lint, format, and vet | — | 🔴 | S | ✅ | #5 |
 | [TASK-INFRA-005](./infra/TASK-INFRA-005-backend-cd.md) | Backend CD pipeline (Docker, GHCR, VPS deploy) | REQ-INFRA-053 | 🔴 | M | ✅ | — |
 | [TASK-INFRA-006](./infra/TASK-INFRA-006-web-cd.md) | Web CD pipeline (Astro website & Flutter web) | REQ-INFRA-054 | 🔴 | M | ✅ | — |
-| [TASK-INFRA-007](./infra/TASK-INFRA-007-mobile-cd.md) | Mobile CD pipeline (Flutter Android build & distribution) | REQ-INFRA-055 | 🔴 | L | 📋 | — |
+| [TASK-INFRA-007](./infra/TASK-INFRA-007-mobile-cd.md) | Mobile CD pipeline (Flutter Android build & distribution) | REQ-INFRA-055 | 🔴 | L | ✅ | — |
 
 ## How to Add a New Task
 
